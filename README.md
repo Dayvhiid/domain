@@ -6,7 +6,7 @@ Monorepo containing both the frontend and backend for the Domain Reseller Platfo
 
 ```
 domain-platform/
-├── frontend/    # React/Vite SPA (swaFrontend)
+├── frontend/    # Static HTML/Tailwind CSS (3starswebhosting.co.za)
 ├── backend/     # Express/Node.js API
 └── .github/     # Unified CI/CD workflow
 ```
@@ -43,5 +43,5 @@ Push to `main` to trigger automatic deployment via GitHub Actions. Both frontend
 
 | Component | Remote Path |
 |-----------|-------------|
-| Frontend | `/home/starswe1/domains/hozmashop.co.za/public_html/` |
+| Frontend | `/home/starswe1/domains/3starswebhosting.co.za/public_html/` |
 | Backend | `/home/starswe1/node-apps/domain-reseller-backend/` |

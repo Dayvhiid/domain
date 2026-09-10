@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — DomainPlatform</title>
+  <meta name="description" content="Get in touch with DomainPlatform. Support, sales, and general inquiries." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/output.css">
+  <style>
+    :root {
+      --bg: #0A0A0C;
+      --bg-elevated: #141417;
+      --text-primary: #F2F2F0;
+      --text-secondary: #8B8B90;
+      --accent: #00F0FF;
+      --border: rgba(255,255,255,0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F5F5F7;
+        --bg-elevated: #FFFFFF;
+        --text-primary: #1D1D1F;
+        --text-secondary: #6E6E73;
+        --accent: #00A8E8;
+        --border: rgba(0,0,0,0.08);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid #27272a;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(0,0,0,0.7);
+    }
+    .site-header-inner {
+      max-width: 80rem; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 1rem;
+    }
+    .site-logo {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: "Syne", sans-serif; font-weight: 700; font-size: 1.125rem;
+      color: #ffffff; letter-spacing: -0.02em; flex-shrink: 0;
+    }
+    .site-logo-icon {
+      display: grid; place-items: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background-color: #22d3ee; color: #000;
+      font-size: .875rem; font-weight: 700;
+    }
+    .site-nav { display: none; align-items: center; gap: .25rem; }
+    @media (min-width: 1024px) { .site-nav { display: flex; } }
+    .site-nav-link {
+      display: inline-flex; align-items: center;
+      padding: .5rem .75rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px;
+      transition: color .15s, background-color .15s; min-height: 44px;
+    }
+    .site-nav-link:hover { color: #22d3ee; background-color: rgba(255,255,255,0.04); }
+    .site-nav-link.active { color: #22d3ee; background-color: rgba(6,182,212,0.08); }
+    .site-actions { display: none; align-items: center; gap: .5rem; }
+    @media (min-width: 1024px) { .site-actions { display: flex; } }
+    .site-cart {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      padding: .5rem; color: #a1a1aa; border-radius: 8px;
+      transition: color .15s, background-color .15s;
+    }
+    .site-cart:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.04); }
+    .site-cart-badge {
+      position: absolute; top: -2px; right: -2px;
+      width: 18px; height: 18px; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-size: 10px; font-weight: 700; display: grid; place-items: center;
+    }
+    .site-login {
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px; transition: color .15s; min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    .site-login:hover { color: #ffffff; }
+    .site-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 8px;
+      transition: background-color .15s, box-shadow .15s; min-height: 40px;
+    }
+    .site-cta:hover { background-color: #67e8f9; box-shadow: 0 0 16px rgba(6,182,212,0.3); }
+    .mobile-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-toggle:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    @media (min-width: 1024px) { .mobile-toggle { display: none; } }
+
+    /* Mobile drawer */
+    .mobile-drawer { position: fixed; inset: 0; z-index: 100; display: flex; justify-content: flex-end; }
+    .mobile-drawer.hidden { display: none; }
+    .mobile-drawer-backdrop { position: absolute; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    .mobile-drawer-panel {
+      position: relative; width: min(320px, 85vw); height: 100%;
+      background-color: #0a0a0c; border-left: 1px solid #27272a;
+      display: flex; flex-direction: column; overflow-y: auto;
+      animation: drawer-slide .2s ease-out;
+    }
+    @keyframes drawer-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .mobile-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem; border-bottom: 1px solid #27272a;
+    }
+    .mobile-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-drawer-close:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    .mobile-drawer-nav { display: flex; flex-direction: column; padding: 1rem 1.25rem; flex: 1; }
+    .mobile-drawer-link {
+      display: flex; align-items: center; padding: .875rem 0;
+      font-size: 1.0625rem; font-weight: 500; color: #d4d4d8;
+      border-bottom: 1px solid #1c1c1f; transition: color .15s; min-height: 48px;
+    }
+    .mobile-drawer-link:hover { color: #22d3ee; }
+    .mobile-drawer-actions { display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; border-top: 1px solid #27272a; }
+    .mobile-drawer-login {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 500;
+      color: #d4d4d8; border: 1px solid #3f3f46; border-radius: 10px;
+      transition: color .15s, border-color .15s; min-height: 48px;
+    }
+    .mobile-drawer-login:hover { color: #ffffff; border-color: #52525b; }
+    .mobile-drawer-cta {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 10px;
+      transition: background-color .15s, box-shadow .15s; min-height: 48px;
+    }
+    .mobile-drawer-cta:hover { background-color: #67e8f9; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+
+    /* Contact page */
+    .contact-page {
+      max-width: 72rem; margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .contact-title {
+      font-family: "Syne", sans-serif; font-weight: 800;
+      font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.15;
+      letter-spacing: -0.03em; color: #ffffff;
+    }
+    .contact-sub {
+      font-size: 1rem; color: #71717a;
+      margin-top: .5rem; line-height: 1.6; max-width: 40rem;
+    }
+
+    /* 2-col grid */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+    @media (min-width: 1024px) {
+      .contact-grid { grid-template-columns: 2fr 1fr; }
+    }
+
+    /* Form card */
+    .form-card {
+      background-color: #121214;
+      border: 1px solid rgba(39,39,42,0.8);
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+    }
+    .form-card-title {
+      font-family: "Syne", sans-serif; font-weight: 700;
+      font-size: 1.125rem; color: #ffffff;
+      margin-bottom: .25rem;
+    }
+    .form-card-sub {
+      font-size: .8125rem; color: #52525b; margin-bottom: 1.5rem;
+    }
+    .form-field { margin-bottom: 1.25rem; }
+    .form-label {
+      display: block; font-size: .8125rem; font-weight: 500;
+      color: #d4d4d8; margin-bottom: .5rem;
+    }
+    .form-input, .form-textarea {
+      width: 100%;
+      background-color: #09090b;
+      border: 1px solid #27272a;
+      border-radius: .5rem;
+      padding: .75rem 1rem;
+      font-size: .9375rem;
+      color: #ffffff;
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .form-textarea { min-height: 8rem; resize: vertical; line-height: 1.6; }
+    .form-input::placeholder, .form-textarea::placeholder { color: #52525b; }
+    .form-input:focus, .form-textarea:focus {
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 2px rgba(6,182,212,0.15);
+    }
+    .form-error {
+      display: none; font-size: .75rem; color: #f87171; margin-top: .25rem;
+    }
+    .form-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; padding: .75rem;
+      font-size: .9375rem; font-weight: 600;
+      color: #000; background-color: #22d3ee;
+      border: none; border-radius: .5rem;
+      cursor: pointer; font-family: inherit;
+      transition: background-color .15s, box-shadow .15s;
+      box-shadow: 0 0 20px rgba(6,182,212,0.2);
+      min-height: 48px;
+    }
+    .form-btn:hover {
+      background-color: #67e8f9;
+      box-shadow: 0 0 28px rgba(6,182,212,0.35);
+    }
+    .form-btn:active { transform: scale(.98); }
+
+    /* Sidebar cards */
+    .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+    .info-card {
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .info-card-title {
+      font-family: "Syne", sans-serif; font-weight: 700;
+      font-size: 1rem; color: #ffffff; margin-bottom: 1rem;
+    }
+    .channel-list { display: flex; flex-direction: column; gap: 1rem; }
+    .channel-item {
+      display: flex; align-items: flex-start; gap: .75rem;
+    }
+    .channel-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      background-color: rgba(6,182,212,0.08); color: #22d3ee;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .channel-icon svg { width: 18px; height: 18px; }
+    .channel-text { font-size: .8125rem; line-height: 1.5; }
+    .channel-label { color: #71717a; }
+    .channel-value { color: #e4e4e7; font-weight: 500; }
+    .channel-value a { color: #22d3ee; transition: color .15s; }
+    .channel-value a:hover { color: #67e8f9; }
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 9999px; background-color: #4ade80;
+      margin-right: .375rem; vertical-align: middle;
+    }
+
+    /* Quick links */
+    .quick-links {
+      display: flex; flex-wrap: wrap; gap: .5rem;
+      margin-top: 1rem;
+    }
+    .quick-link {
+      display: inline-flex; align-items: center; gap: .375rem;
+      padding: .375rem .75rem; border-radius: 9999px;
+      font-size: .75rem; font-weight: 500;
+      border: 1px solid #27272a; background-color: #18181b;
+      color: #a1a1aa; text-decoration: none;
+      transition: all .15s;
+    }
+    .quick-link:hover { color: #22d3ee; border-color: rgba(6,182,212,0.3); }
+    .quick-link svg { width: 12px; height: 12px; }
+
+    /* Self-serve card */
+    .selfserve-card {
+      background: linear-gradient(135deg, rgba(6,182,212,0.04) 0%, #121214 100%);
+      border: 1px solid rgba(6,182,212,0.15);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .selfserve-title {
+      font-family: "Syne", sans-serif; font-weight: 700;
+      font-size: 1rem; color: #ffffff; margin-bottom: .375rem;
+    }
+    .selfserve-desc {
+      font-size: .8125rem; color: #71717a; line-height: 1.5; margin-bottom: 1rem;
+    }
+    .selfserve-btn {
+      display: inline-flex; align-items: center; gap: .375rem;
+      padding: .5rem 1.25rem; border-radius: 9999px;
+      background-color: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.25);
+      color: #22d3ee; font-size: .8125rem; font-weight: 600;
+      text-decoration: none;
+      transition: all .15s;
+    }
+    .selfserve-btn:hover {
+      background-color: #22d3ee; color: #000;
+      border-color: #22d3ee;
+      box-shadow: 0 0 15px rgba(6,182,212,0.25);
+    }
+
+    /* Site footer */
+    .site-footer {
+      border-top: 1px solid #27272a; padding: 1.5rem;
+      text-align: center; font-size: .8125rem; color: #3f3f46;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="index.html" class="site-logo">
+        <span class="site-logo-icon">◈</span>
+        <span>DomainPlatform</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="domains.html" class="site-nav-link">Domains</a>
+        <a href="pricing.html" class="site-nav-link">Pricing</a>
+        <a href="transfer-domain.html" class="site-nav-link">Transfer</a>
+        <a href="whois.html" class="site-nav-link">WHOIS</a>
+        <a href="support.html" class="site-nav-link">Support</a>
+      </nav>
+      <div class="site-actions">
+        <a href="cart.html" class="site-cart" aria-label="Cart">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-13z"/><path d="M6 6L5 2H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+          <span data-cart-count class="site-cart-badge hidden">0</span>
+        </a>
+        <a href="login.html" class="site-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="site-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="site-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="site-login" data-auth-user style="display:none">Log out</button>
+      </div>
+      <button id="mobile-menu-button" class="mobile-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <svg id="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg id="icon-close" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile drawer -->
+  <div id="mobile-menu" class="mobile-drawer hidden">
+    <div class="mobile-drawer-backdrop" data-mobile-close></div>
+    <div class="mobile-drawer-panel">
+      <div class="mobile-drawer-header">
+        <a href="index.html" class="site-logo"><span class="site-logo-icon">◈</span><span>DomainPlatform</span></a>
+        <button id="mobile-menu-close" class="mobile-drawer-close" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="mobile-drawer-nav" aria-label="Mobile">
+        <a href="domains.html" class="mobile-drawer-link">Domains</a>
+        <a href="pricing.html" class="mobile-drawer-link">Pricing</a>
+        <a href="transfer-domain.html" class="mobile-drawer-link">Transfer Domain</a>
+        <a href="whois.html" class="mobile-drawer-link">WHOIS Lookup</a>
+        <a href="support.html" class="mobile-drawer-link">Support</a>
+      </nav>
+      <div class="mobile-drawer-actions">
+        <a href="login.html" class="mobile-drawer-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="mobile-drawer-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="mobile-drawer-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="mobile-drawer-login" data-auth-user style="display:none">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="contact-page">
+      <!-- Hero -->
+      <h1 class="contact-title">Contact us</h1>
+      <p class="contact-sub">We are here to help — average response time under 15 minutes.</p>
+
+      <!-- 2-column grid -->
+      <div class="contact-grid">
+        <!-- Form -->
+        <div class="form-card">
+          <h2 class="form-card-title">Send us a message</h2>
+          <p class="form-card-sub">Fill out the form below and we'll get back to you shortly.</p>
+          <form data-validate novalidate onsubmit="event.preventDefault(); toast('Message sent (mock). We will reply by email placeholder.', 'success'); this.reset();">
+            <div class="form-field">
+              <label class="form-label" for="c-name">Name</label>
+              <input id="c-name" type="text" required placeholder="Your full name" class="form-input" />
+              <p data-error class="form-error">Required</p>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="c-email">Email</label>
+              <input id="c-email" type="email" required placeholder="you@example.com" class="form-input" />
+              <p data-error class="form-error">Valid email required</p>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="c-subject">Subject</label>
+              <input id="c-subject" type="text" required placeholder="How can we help?" class="form-input" />
+              <p data-error class="form-error">Required</p>
+            </div>
+            <div class="form-field">
+              <label class="form-label" for="c-msg">Message</label>
+              <textarea id="c-msg" rows="5" required placeholder="Tell us more about your question or issue…" class="form-textarea"></textarea>
+              <p data-error class="form-error">Required</p>
+            </div>
+            <button type="submit" class="form-btn">Send message</button>
+          </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+          <!-- Direct channels -->
+          <div class="info-card">
+            <h3 class="info-card-title">Get in touch</h3>
+            <div class="channel-list">
+              <div class="channel-item">
+                <div class="channel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="channel-text">
+                  <div class="channel-label">Email</div>
+                  <div class="channel-value"><a href="mailto:support@domainplatform.com">support@domainplatform.com</a></div>
+                </div>
+              </div>
+              <div class="channel-item">
+                <div class="channel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div class="channel-text">
+                  <div class="channel-label">Live chat</div>
+                  <div class="channel-value"><span class="status-dot"></span>Available now</div>
+                </div>
+              </div>
+              <div class="channel-item">
+                <div class="channel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div class="channel-text">
+                  <div class="channel-label">Business hours</div>
+                  <div class="channel-value">Mon–Fri 9am–5pm WAT</div>
+                </div>
+              </div>
+              <div class="channel-item">
+                <div class="channel-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="channel-text">
+                  <div class="channel-label">Direct sales</div>
+                  <div class="channel-value"><a href="mailto:sales@domainplatform.com">sales@domainplatform.com</a></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick links -->
+          <div class="info-card">
+            <h3 class="info-card-title">Self-serve quick links</h3>
+            <div class="quick-links">
+              <a href="whois.html" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Check WHOIS
+              </a>
+              <a href="faq.html" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                DNS troubleshooting
+              </a>
+              <a href="transfer-domain.html" class="quick-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                Domain transfers
+              </a>
+            </div>
+          </div>
+
+          <!-- Self-serve -->
+          <div class="selfserve-card">
+            <h3 class="selfserve-title">Prefer self-serve?</h3>
+            <p class="selfserve-desc">Browse our help center for instant answers to common questions about domains, DNS, billing and more.</p>
+            <a href="support.html" class="selfserve-btn">
+              Visit Help Center
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

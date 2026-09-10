@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms &amp; Conditions – DomainPlatform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+  </style>
+</head>
+<body class="bg-[#09090b] text-zinc-400 antialiased min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="sticky top-0 z-50 bg-[#09090b]/80 backdrop-blur-lg border-b border-zinc-800">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-lg bg-cyan-400 flex items-center justify-center">
+          <span class="text-[#09090b] font-bold text-sm">DP</span>
+        </div>
+        <span class="text-white font-semibold text-lg tracking-tight">DomainPlatform</span>
+      </a>
+
+      <!-- Center Links -->
+      <div class="hidden md:flex items-center gap-8">
+        <a href="index.html" class="text-sm text-zinc-400 hover:text-white transition-colors">Home</a>
+        <a href="pricing.html" class="text-sm text-zinc-400 hover:text-white transition-colors">Pricing</a>
+        <a href="terms.html" class="text-sm text-cyan-400 font-medium">Terms</a>
+        <a href="privacy.html" class="text-sm text-zinc-400 hover:text-white transition-colors">Privacy</a>
+        <a href="refund.html" class="text-sm text-zinc-400 hover:text-white transition-colors">Refund Policy</a>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="login.html" class="text-sm text-zinc-400 hover:text-white transition-colors px-4 py-2">Log in</a>
+        <a href="register.html" class="text-sm font-medium text-[#09090b] bg-cyan-400 hover:bg-cyan-300 px-4 py-2 rounded-lg transition-colors">Create account</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-6 py-12">
+    <div class="flex flex-col lg:flex-row gap-12">
+
+      <!-- Sidebar TOC (Desktop) -->
+      <aside class="hidden lg:block w-64 shrink-0">
+        <div class="sticky top-24">
+          <p class="text-xs font-semibold text-white uppercase tracking-wider mb-4">On this page</p>
+          <nav class="flex flex-col gap-1">
+            <a href="#introduction" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-800/50">1. Introduction &amp; Acceptance</a>
+            <a href="#domain-registration" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-800/50">2. Domain Registration &amp; Ownership</a>
+            <a href="#account-security" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-800/50">3. Account Security &amp; EPP Codes</a>
+            <a href="#acceptable-use" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-800/50">4. Acceptable Use &amp; Prohibited Activities</a>
+            <a href="#pricing-renewals" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-1.5 px-3 rounded-lg hover:bg-zinc-800/50">5. Pricing, Renewals &amp; Expiration</a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Document Content -->
+      <div class="flex-1 min-w-0">
+        <!-- Page Header -->
+        <div class="mb-10">
+          <h1 class="text-2xl font-bold text-white tracking-tight mb-2">Terms &amp; Conditions</h1>
+          <p class="text-sm text-zinc-500">Last updated: September 4, 2026</p>
+        </div>
+
+        <!-- Section 1 -->
+        <section id="introduction" class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-sm font-semibold">1</span>
+            <h2 class="text-lg font-semibold text-white">Introduction &amp; Acceptance</h2>
+          </div>
+          <div class="text-zinc-400 text-sm leading-relaxed space-y-3">
+            <p>By creating an account or purchasing services on DomainPlatform, you agree to these Terms &amp; Conditions in full.</p>
+            <p>You must be at least 18 years old or possess legal business capacity to register domains or purchase infrastructure services.</p>
+          </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="domain-registration" class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-sm font-semibold">2</span>
+            <h2 class="text-lg font-semibold text-white">Domain Registration &amp; Ownership</h2>
+          </div>
+          <div class="text-zinc-400 text-sm leading-relaxed space-y-3">
+            <p>DomainPlatform acts as an authorized reseller and registrar facilitator. Final domain delegation is subject to ICANN rules and relevant registry policies (e.g., .com via Verisign, .ng via NIRA).</p>
+            <p>You retain full ownership of all legally registered domains provided your account remains in good financial standing.</p>
+          </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="account-security" class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-sm font-semibold">3</span>
+            <h2 class="text-lg font-semibold text-white">Account Security &amp; EPP Codes</h2>
+          </div>
+          <div class="text-zinc-400 text-sm leading-relaxed space-y-3">
+            <p>You are solely responsible for maintaining the confidentiality of your login credentials and Authorization/EPP codes.</p>
+            <p>DomainPlatform is not liable for unauthorized domain transfers resulting from compromised user credentials.</p>
+          </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="acceptable-use" class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-sm font-semibold">4</span>
+            <h2 class="text-lg font-semibold text-white">Acceptable Use &amp; Prohibited Activities</h2>
+          </div>
+          <div class="text-zinc-400 text-sm leading-relaxed space-y-3">
+            <p>You may not use registered domains or DNS services for malware distribution, phishing, spamming, copyright infringement, or illegal activity.</p>
+            <p>We reserve the right to suspend DNS resolution or lock domains upon receipt of verified legal takedown notices or abuse reports.</p>
+          </div>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="pricing-renewals" class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 mb-6">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-cyan-400/10 text-cyan-400 flex items-center justify-center text-sm font-semibold">5</span>
+            <h2 class="text-lg font-semibold text-white">Pricing, Renewals &amp; Expiration</h2>
+          </div>
+          <div class="text-zinc-400 text-sm leading-relaxed space-y-3">
+            <p>Domain registration, renewal, and transfer fees are non-refundable unless specified in our Refund Policy.</p>
+            <p>Auto-renewal occurs 30 days prior to domain expiration if enabled. Expired domains enter a registry grace period, after which redemption fees may apply.</p>
+          </div>
+        </section>
+
+        <!-- Footer Note -->
+        <div class="mt-10 text-center">
+          <p class="text-xs text-zinc-600">If you have questions about these terms, contact <a href="mailto:support@domainplatform.com" class="text-cyan-400 hover:text-cyan-300 transition-colors">support@domainplatform.com</a></p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-zinc-800 mt-12">
+    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <p class="text-xs text-zinc-600">&copy; 2026 DomainPlatform. All rights reserved.</p>
+      <div class="flex items-center gap-6">
+        <a href="terms.html" class="text-xs text-zinc-500 hover:text-white transition-colors">Terms</a>
+        <a href="privacy.html" class="text-xs text-zinc-500 hover:text-white transition-colors">Privacy</a>
+        <a href="refund.html" class="text-xs text-zinc-500 hover:text-white transition-colors">Refund Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile TOC Toggle -->
+  <div class="lg:hidden fixed bottom-6 right-6 z-50">
+    <button onclick="document.getElementById('mobileToc').classList.toggle('hidden')" class="w-12 h-12 rounded-full bg-cyan-400 text-[#09090b] flex items-center justify-center shadow-lg shadow-cyan-400/20 hover:bg-cyan-300 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile TOC Drawer -->
+  <div id="mobileToc" class="hidden lg:hidden fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="document.getElementById('mobileToc').classList.add('hidden')"></div>
+    <div class="absolute right-0 top-0 h-full w-72 bg-[#121214] border-l border-zinc-800 p-6 overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <p class="text-xs font-semibold text-white uppercase tracking-wider">On this page</p>
+        <button onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-zinc-500 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="flex flex-col gap-1">
+        <a href="#introduction" onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-zinc-800/50">1. Introduction &amp; Acceptance</a>
+        <a href="#domain-registration" onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-zinc-800/50">2. Domain Registration &amp; Ownership</a>
+        <a href="#account-security" onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-zinc-800/50">3. Account Security &amp; EPP Codes</a>
+        <a href="#acceptable-use" onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-zinc-800/50">4. Acceptable Use &amp; Prohibited Activities</a>
+        <a href="#pricing-renewals" onclick="document.getElementById('mobileToc').classList.add('hidden')" class="text-sm text-zinc-400 hover:text-cyan-400 transition-colors py-2 px-3 rounded-lg hover:bg-zinc-800/50">5. Pricing, Renewals &amp; Expiration</a>
+      </nav>
+    </div>
+  </div>
+
+</body>
+</html>

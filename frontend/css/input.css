@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+@import 'theme.css';
+@import 'page.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Semantic colors (light/dark), custom components, focus states and motion
+ * live in css/theme.css (shared by static pages and WordPress). Keep the two
+ * in sync — this file only supplies Tailwind directives + base typography.
+ */
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { background-color: var(--bg-app); color: var(--text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  h1, h2, h3, h4 { font-family: "Syne", "Inter", system-ui, sans-serif; }
+  h1,h2,h3,h4 { letter-spacing: -0.025em; font-weight: 600; }
+  a { text-underline-offset: 4px; }
+
+  /* Apple-style semantic color utilities */
+  .bg-system { background-color: var(--system-background); }
+  .bg-secondary-system { background-color: var(--secondary-system-background); }
+  .bg-tertiary-system { background-color: var(--tertiary-system-background); }
+  .bg-system-fill { background-color: var(--system-fill); }
+  .bg-secondary-system-fill { background-color: var(--secondary-system-fill); }
+  .bg-tertiary-system-fill { background-color: var(--tertiary-system-fill); }
+
+  .text-label { color: var(--label); }
+  .text-secondary-label { color: var(--secondary-label); }
+  .text-tertiary-label { color: var(--tertiary-label); }
+  .text-quaternary-label { color: var(--quaternary-label); }
+
+  .border-separator { border-color: var(--separator); }
+  .border-opaque-separator { border-color: var(--opaque-separator); }
+
+  .material-regular { background-color: var(--material-regular); backdrop-filter: blur(20px); }
+  .material-thick { background-color: var(--material-thick); backdrop-filter: blur(40px); }
+  .material-thin { background-color: var(--material-thin); backdrop-filter: blur(10px); }
+}

@@ -1,0 +1,508 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Support — DomainPlatform</title>
+  <meta name="description" content="Get help with domains, transfers, DNS, billing and account management." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/output.css">
+  <style>
+    :root {
+      --bg: #0A0A0C;
+      --bg-elevated: #141417;
+      --text-primary: #F2F2F0;
+      --text-secondary: #8B8B90;
+      --accent: #00F0FF;
+      --border: rgba(255,255,255,0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F5F5F7;
+        --bg-elevated: #FFFFFF;
+        --text-primary: #1D1D1F;
+        --text-secondary: #6E6E73;
+        --accent: #00A8E8;
+        --border: rgba(0,0,0,0.08);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid #27272a;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(0,0,0,0.7);
+    }
+    .site-header-inner {
+      max-width: 80rem; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 1rem;
+    }
+    .site-logo {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: "Syne", sans-serif; font-weight: 700; font-size: 1.125rem;
+      color: #ffffff; letter-spacing: -0.02em; flex-shrink: 0;
+    }
+    .site-logo-icon {
+      display: grid; place-items: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background-color: #22d3ee; color: #000;
+      font-size: .875rem; font-weight: 700;
+    }
+    .site-nav { display: none; align-items: center; gap: .25rem; }
+    @media (min-width: 1024px) { .site-nav { display: flex; } }
+    .site-nav-link {
+      display: inline-flex; align-items: center;
+      padding: .5rem .75rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px;
+      transition: color .15s, background-color .15s; min-height: 44px;
+    }
+    .site-nav-link:hover { color: #22d3ee; background-color: rgba(255,255,255,0.04); }
+    .site-nav-link.active { color: #22d3ee; background-color: rgba(6,182,212,0.08); }
+    .site-actions { display: none; align-items: center; gap: .5rem; }
+    @media (min-width: 1024px) { .site-actions { display: flex; } }
+    .site-cart {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      padding: .5rem; color: #a1a1aa; border-radius: 8px;
+      transition: color .15s, background-color .15s;
+    }
+    .site-cart:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.04); }
+    .site-cart-badge {
+      position: absolute; top: -2px; right: -2px;
+      width: 18px; height: 18px; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-size: 10px; font-weight: 700; display: grid; place-items: center;
+    }
+    .site-login {
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px; transition: color .15s; min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    .site-login:hover { color: #ffffff; }
+    .site-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 8px;
+      transition: background-color .15s, box-shadow .15s; min-height: 40px;
+    }
+    .site-cta:hover { background-color: #67e8f9; box-shadow: 0 0 16px rgba(6,182,212,0.3); }
+    .mobile-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-toggle:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    @media (min-width: 1024px) { .mobile-toggle { display: none; } }
+
+    /* Mobile drawer */
+    .mobile-drawer { position: fixed; inset: 0; z-index: 100; display: flex; justify-content: flex-end; }
+    .mobile-drawer.hidden { display: none; }
+    .mobile-drawer-backdrop { position: absolute; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    .mobile-drawer-panel {
+      position: relative; width: min(320px, 85vw); height: 100%;
+      background-color: #0a0a0c; border-left: 1px solid #27272a;
+      display: flex; flex-direction: column; overflow-y: auto;
+      animation: drawer-slide .2s ease-out;
+    }
+    @keyframes drawer-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .mobile-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem; border-bottom: 1px solid #27272a;
+    }
+    .mobile-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-drawer-close:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    .mobile-drawer-nav { display: flex; flex-direction: column; padding: 1rem 1.25rem; flex: 1; }
+    .mobile-drawer-link {
+      display: flex; align-items: center; padding: .875rem 0;
+      font-size: 1.0625rem; font-weight: 500; color: #d4d4d8;
+      border-bottom: 1px solid #1c1c1f; transition: color .15s; min-height: 48px;
+    }
+    .mobile-drawer-link:hover { color: #22d3ee; }
+    .mobile-drawer-actions { display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; border-top: 1px solid #27272a; }
+    .mobile-drawer-login {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 500;
+      color: #d4d4d8; border: 1px solid #3f3f46; border-radius: 10px;
+      transition: color .15s, border-color .15s; min-height: 48px;
+    }
+    .mobile-drawer-login:hover { color: #ffffff; border-color: #52525b; }
+    .mobile-drawer-cta {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 10px;
+      transition: background-color .15s, box-shadow .15s; min-height: 48px;
+    }
+    .mobile-drawer-cta:hover { background-color: #67e8f9; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+
+    /* Support page */
+    .support-page {
+      max-width: 64rem; margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    /* Hero */
+    .support-hero {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .support-hero-title {
+      font-family: "Syne", sans-serif; font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1;
+      letter-spacing: -0.03em; color: #ffffff;
+    }
+    .support-hero-sub {
+      font-size: 1rem; color: #71717a;
+      margin-top: .5rem; line-height: 1.6;
+    }
+
+    /* Search */
+    .support-search {
+      display: flex; align-items: center; gap: 0;
+      max-width: 36rem; margin: 2rem auto 0;
+      background-color: #18181b; border: 1px solid #27272a;
+      border-radius: 9999px; padding: 5px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .support-search:focus-within {
+      border-color: rgba(6,182,212,0.5);
+      box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    }
+    .support-search-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #ffffff; font-size: 1rem; padding: 12px 20px;
+      font-family: inherit;
+    }
+    .support-search-input::placeholder { color: #52525b; }
+    .support-search-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 24px; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-weight: 700; font-size: .875rem;
+      font-family: "Syne", sans-serif; border: none; cursor: pointer;
+      white-space: nowrap; transition: background-color .15s, box-shadow .15s;
+      box-shadow: 0 0 15px rgba(6,182,212,0.25);
+    }
+    .support-search-btn:hover { background-color: #67e8f9; box-shadow: 0 0 24px rgba(6,182,212,0.4); }
+
+    /* Category grid */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 768px) { .cat-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .cat-grid { grid-template-columns: 1fr; } }
+    .cat-card {
+      display: flex; flex-direction: column;
+      padding: 1.5rem;
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+      transition: border-color .2s, background-color .2s;
+      text-decoration: none;
+    }
+    .cat-card:hover {
+      border-color: rgba(6,182,212,0.5);
+      background-color: #18181b;
+    }
+    .cat-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background-color: rgba(6,182,212,0.08); color: #22d3ee;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem; flex-shrink: 0;
+    }
+    .cat-icon svg { width: 20px; height: 20px; }
+    .cat-title {
+      font-weight: 700; font-size: 1rem; color: #ffffff;
+      margin-bottom: .25rem;
+    }
+    .cat-desc {
+      font-size: .8125rem; color: #71717a; line-height: 1.5;
+    }
+
+    /* Contact card */
+    .contact-card {
+      grid-column: 1 / -1;
+      display: flex; flex-direction: column;
+      padding: 1.75rem;
+      background-color: rgba(6,182,212,0.03);
+      border: 1px solid rgba(6,182,212,0.2);
+      border-radius: 1rem;
+      transition: border-color .2s;
+    }
+    .contact-card:hover {
+      border-color: rgba(6,182,212,0.4);
+    }
+    .contact-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background-color: rgba(6,182,212,0.12); color: #22d3ee;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem; flex-shrink: 0;
+    }
+    .contact-icon svg { width: 20px; height: 20px; }
+    .contact-title {
+      font-weight: 700; font-size: 1rem; color: #ffffff;
+      margin-bottom: .25rem;
+    }
+    .contact-desc {
+      font-size: .8125rem; color: #71717a; line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: .375rem;
+      padding: .5rem 1.25rem; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-size: .8125rem; font-weight: 600;
+      text-decoration: none; align-self: flex-start;
+      transition: background-color .15s, box-shadow .15s;
+      box-shadow: 0 0 12px rgba(6,182,212,0.2);
+    }
+    .contact-btn:hover {
+      background-color: #67e8f9;
+      box-shadow: 0 0 20px rgba(6,182,212,0.35);
+    }
+
+    /* Popular questions */
+    .faq-section {
+      margin-top: 2rem;
+    }
+    .faq-card {
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+      overflow: hidden;
+    }
+    .faq-header {
+      padding: 1.5rem 1.75rem 0;
+      font-family: "Syne", sans-serif; font-weight: 700;
+      font-size: 1rem; color: #ffffff;
+    }
+    .faq-list { list-style: none; }
+    .faq-item {
+      border-bottom: 1px solid #1c1c1f;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-link {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.75rem;
+      font-size: .875rem; color: #a1a1aa;
+      text-decoration: none;
+      transition: color .15s, background-color .15s;
+    }
+    .faq-link:hover {
+      color: #22d3ee;
+      background-color: rgba(255,255,255,0.02);
+    }
+    .faq-arrow {
+      color: #52525b; transition: color .15s, transform .15s;
+      flex-shrink: 0;
+    }
+    .faq-link:hover .faq-arrow {
+      color: #22d3ee;
+      transform: translateX(3px);
+    }
+
+    /* Site footer */
+    .site-footer {
+      border-top: 1px solid #27272a; padding: 1.5rem;
+      text-align: center; font-size: .8125rem; color: #3f3f46;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="index.html" class="site-logo">
+        <span class="site-logo-icon">◈</span>
+        <span>DomainPlatform</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="domains.html" class="site-nav-link">Domains</a>
+        <a href="pricing.html" class="site-nav-link">Pricing</a>
+        <a href="transfer-domain.html" class="site-nav-link">Transfer</a>
+        <a href="whois.html" class="site-nav-link">WHOIS</a>
+        <a href="support.html" class="site-nav-link active">Support</a>
+      </nav>
+      <div class="site-actions">
+        <a href="cart.html" class="site-cart" aria-label="Cart">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-13z"/><path d="M6 6L5 2H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+          <span data-cart-count class="site-cart-badge hidden">0</span>
+        </a>
+        <a href="login.html" class="site-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="site-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="site-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="site-login" data-auth-user style="display:none">Log out</button>
+      </div>
+      <button id="mobile-menu-button" class="mobile-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <svg id="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg id="icon-close" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile drawer -->
+  <div id="mobile-menu" class="mobile-drawer hidden">
+    <div class="mobile-drawer-backdrop" data-mobile-close></div>
+    <div class="mobile-drawer-panel">
+      <div class="mobile-drawer-header">
+        <a href="index.html" class="site-logo"><span class="site-logo-icon">◈</span><span>DomainPlatform</span></a>
+        <button id="mobile-menu-close" class="mobile-drawer-close" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="mobile-drawer-nav" aria-label="Mobile">
+        <a href="domains.html" class="mobile-drawer-link">Domains</a>
+        <a href="pricing.html" class="mobile-drawer-link">Pricing</a>
+        <a href="transfer-domain.html" class="mobile-drawer-link">Transfer Domain</a>
+        <a href="whois.html" class="mobile-drawer-link">WHOIS Lookup</a>
+        <a href="support.html" class="mobile-drawer-link">Support</a>
+      </nav>
+      <div class="mobile-drawer-actions">
+        <a href="login.html" class="mobile-drawer-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="mobile-drawer-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="mobile-drawer-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="mobile-drawer-login" data-auth-user style="display:none">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="support-page">
+      <!-- Hero -->
+      <div class="support-hero">
+        <h1 class="support-hero-title">Help Center</h1>
+        <p class="support-hero-sub">Find answers to common questions or get in touch with our team.</p>
+        <form class="support-search" onsubmit="return false;">
+          <label for="support-search-input" class="sr-only">Search help</label>
+          <input id="support-search-input" type="search" placeholder="Search help — e.g. renewal, transfer, DNS" class="support-search-input" />
+          <button type="submit" class="support-search-btn">Search</button>
+        </form>
+      </div>
+
+      <!-- Category grid -->
+      <div class="cat-grid">
+        <a href="faq.html" class="cat-card">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <h3 class="cat-title">Domains</h3>
+          <p class="cat-desc">Registration, renewal, expiration and management</p>
+        </a>
+
+        <a href="faq.html" class="cat-card">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <h3 class="cat-title">Transfers</h3>
+          <p class="cat-desc">Move domains in or out with EPP codes</p>
+        </a>
+
+        <a href="faq.html" class="cat-card">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <h3 class="cat-title">DNS</h3>
+          <p class="cat-desc">Records, nameservers and configuration</p>
+        </a>
+
+        <a href="faq.html" class="cat-card">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <h3 class="cat-title">Billing</h3>
+          <p class="cat-desc">Invoices, payment methods and receipts</p>
+        </a>
+
+        <a href="faq.html" class="cat-card">
+          <div class="cat-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <h3 class="cat-title">Account</h3>
+          <p class="cat-desc">Login, contacts, privacy and settings</p>
+        </a>
+
+        <!-- Contact card -->
+        <div class="contact-card">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="contact-title">Contact support</h3>
+          <p class="contact-desc">Can't find what you're looking for? Our team will reply by email — placeholder for now.</p>
+          <a href="contact.html" class="contact-btn">Contact us <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a>
+        </div>
+      </div>
+
+      <!-- Popular questions -->
+      <div class="faq-section">
+        <div class="faq-card">
+          <div class="faq-header">Popular questions</div>
+          <ul class="faq-list">
+            <li class="faq-item">
+              <a href="faq.html" class="faq-link">
+                <span>How does domain renewal pricing work?</span>
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </li>
+            <li class="faq-item">
+              <a href="faq.html" class="faq-link">
+                <span>How do I change nameservers?</span>
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </li>
+            <li class="faq-item">
+              <a href="transfer-domain.html" class="faq-link">
+                <span>Can I transfer a .ng domain?</span>
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </li>
+            <li class="faq-item">
+              <a href="faq.html" class="faq-link">
+                <span>What happens when my domain expires?</span>
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </li>
+            <li class="faq-item">
+              <a href="faq.html" class="faq-link">
+                <span>How do I enable WHOIS privacy?</span>
+                <svg class="faq-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

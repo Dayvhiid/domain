@@ -1,0 +1,22 @@
+/*
+Theme Name: Domain Reseller Platform
+Theme URI: https://example.com/domain-platform
+Author: DomainPlatform
+Author URI: https://example.com
+Description: White-label domain reseller platform — clean, modern, newsroom-simple frontend for white-label domain reselling. Transparent pricing, fast domain search, DNS management and client area mock. Built frontend-first with Tailwind CSS + Vanilla JS, now WordPress-ready. Theme = presentation only; registrar logic lives in a companion plugin per docs/WORDPRESS-CONVERSION.md.
+Version: 1.0.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: domain-platform
+Tags: domain, reseller, hosting, business, minimal, responsive, accessibility-ready
+Requires at least: 6.0
+Tested up to: 6.6
+Requires PHP: 8.0
+*/
+
+/* WordPress required style.css
+   Real styles are in css/output.css (production build from css/input.css).
+   Run: npm install && npm run build
+   This file must stay in the theme root for WordPress to recognize the theme.
+   Do not put registrar secrets here — see docs/API-INTEGRATION.md
+*/

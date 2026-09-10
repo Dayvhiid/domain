@@ -1,0 +1,380 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WHOIS Lookup — DomainPlatform</title>
+  <meta name="description" content="Look up domain registration data. Privacy-aware — personal data redacted." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/output.css">
+  <style>
+    :root {
+      --bg: #0A0A0C;
+      --bg-elevated: #141417;
+      --text-primary: #F2F2F0;
+      --text-secondary: #8B8B90;
+      --accent: #00F0FF;
+      --border: rgba(255,255,255,0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F5F5F7;
+        --bg-elevated: #FFFFFF;
+        --text-primary: #1D1D1F;
+        --text-secondary: #6E6E73;
+        --accent: #00A8E8;
+        --border: rgba(0,0,0,0.08);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid #27272a;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(0,0,0,0.7);
+    }
+    .site-header-inner {
+      max-width: 80rem; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 1rem;
+    }
+    .site-logo {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: "Syne", sans-serif; font-weight: 700; font-size: 1.125rem;
+      color: #ffffff; letter-spacing: -0.02em; flex-shrink: 0;
+    }
+    .site-logo-icon {
+      display: grid; place-items: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background-color: #22d3ee; color: #000;
+      font-size: .875rem; font-weight: 700;
+    }
+    .site-nav { display: none; align-items: center; gap: .25rem; }
+    @media (min-width: 1024px) { .site-nav { display: flex; } }
+    .site-nav-link {
+      display: inline-flex; align-items: center;
+      padding: .5rem .75rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px;
+      transition: color .15s, background-color .15s; min-height: 44px;
+    }
+    .site-nav-link:hover { color: #22d3ee; background-color: rgba(255,255,255,0.04); }
+    .site-nav-link.active { color: #22d3ee; background-color: rgba(6,182,212,0.08); }
+    .site-actions { display: none; align-items: center; gap: .5rem; }
+    @media (min-width: 1024px) { .site-actions { display: flex; } }
+    .site-cart {
+      position: relative; display: flex; align-items: center; justify-content: center;
+      padding: .5rem; color: #a1a1aa; border-radius: 8px;
+      transition: color .15s, background-color .15s;
+    }
+    .site-cart:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.04); }
+    .site-cart-badge {
+      position: absolute; top: -2px; right: -2px;
+      width: 18px; height: 18px; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-size: 10px; font-weight: 700; display: grid; place-items: center;
+    }
+    .site-login {
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 500;
+      color: #d4d4d8; border-radius: 8px; transition: color .15s; min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    .site-login:hover { color: #ffffff; }
+    .site-cta {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .5rem 1rem; font-size: .875rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 8px;
+      transition: background-color .15s, box-shadow .15s; min-height: 40px;
+    }
+    .site-cta:hover { background-color: #67e8f9; box-shadow: 0 0 16px rgba(6,182,212,0.3); }
+    .mobile-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-toggle:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    @media (min-width: 1024px) { .mobile-toggle { display: none; } }
+
+    /* Mobile drawer */
+    .mobile-drawer { position: fixed; inset: 0; z-index: 100; display: flex; justify-content: flex-end; }
+    .mobile-drawer.hidden { display: none; }
+    .mobile-drawer-backdrop { position: absolute; inset: 0; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+    .mobile-drawer-panel {
+      position: relative; width: min(320px, 85vw); height: 100%;
+      background-color: #0a0a0c; border-left: 1px solid #27272a;
+      display: flex; flex-direction: column; overflow-y: auto;
+      animation: drawer-slide .2s ease-out;
+    }
+    @keyframes drawer-slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .mobile-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem; border-bottom: 1px solid #27272a;
+    }
+    .mobile-drawer-close {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 8px; border: none;
+      background: transparent; color: #a1a1aa; cursor: pointer;
+      transition: color .15s, background-color .15s;
+    }
+    .mobile-drawer-close:hover { color: #d4d4d8; background-color: rgba(255,255,255,0.06); }
+    .mobile-drawer-nav { display: flex; flex-direction: column; padding: 1rem 1.25rem; flex: 1; }
+    .mobile-drawer-link {
+      display: flex; align-items: center; padding: .875rem 0;
+      font-size: 1.0625rem; font-weight: 500; color: #d4d4d8;
+      border-bottom: 1px solid #1c1c1f; transition: color .15s; min-height: 48px;
+    }
+    .mobile-drawer-link:hover { color: #22d3ee; }
+    .mobile-drawer-actions { display: flex; flex-direction: column; gap: .75rem; padding: 1.25rem; border-top: 1px solid #27272a; }
+    .mobile-drawer-login {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 500;
+      color: #d4d4d8; border: 1px solid #3f3f46; border-radius: 10px;
+      transition: color .15s, border-color .15s; min-height: 48px;
+    }
+    .mobile-drawer-login:hover { color: #ffffff; border-color: #52525b; }
+    .mobile-drawer-cta {
+      display: flex; align-items: center; justify-content: center;
+      padding: .875rem; font-size: .9375rem; font-weight: 600;
+      color: #000; background-color: #22d3ee; border-radius: 10px;
+      transition: background-color .15s, box-shadow .15s; min-height: 48px;
+    }
+    .mobile-drawer-cta:hover { background-color: #67e8f9; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+
+    /* WHOIS page */
+    .whois-page {
+      max-width: 56rem; margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .whois-title {
+      font-family: "Syne", sans-serif; font-weight: 800;
+      font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.15;
+      letter-spacing: -0.03em; color: #ffffff;
+    }
+    .whois-sub {
+      font-size: 1rem; color: #71717a;
+      margin-top: .5rem; line-height: 1.6; max-width: 40rem;
+    }
+
+    /* Search bar */
+    .whois-search {
+      display: flex; align-items: center; gap: 0;
+      margin-top: 2rem;
+      background-color: #18181b; border: 1px solid #27272a;
+      border-radius: 9999px; padding: 5px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .whois-search:focus-within {
+      border-color: rgba(6,182,212,0.5);
+      box-shadow: 0 0 0 3px rgba(6,182,212,0.1);
+    }
+    .whois-search-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #ffffff; font-size: 1rem; padding: 12px 20px;
+      font-family: inherit;
+    }
+    .whois-search-input::placeholder { color: #52525b; }
+    .whois-search-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 24px; border-radius: 9999px;
+      background-color: #22d3ee; color: #000;
+      font-weight: 700; font-size: .875rem;
+      font-family: "Syne", sans-serif; border: none; cursor: pointer;
+      white-space: nowrap; transition: background-color .15s, box-shadow .15s;
+      box-shadow: 0 0 15px rgba(6,182,212,0.25);
+    }
+    .whois-search-btn:hover { background-color: #67e8f9; box-shadow: 0 0 24px rgba(6,182,212,0.4); }
+
+    /* Loading */
+    .whois-loading {
+      display: none; align-items: center; gap: .75rem;
+      margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+      background-color: #121214; border: 1px solid #27272a;
+      border-radius: 1rem; color: #71717a; font-size: .875rem;
+    }
+    .whois-loading[hidden] { display: none; }
+    .whois-loading:not([hidden]) { display: flex; }
+    .whois-spinner {
+      width: 20px; height: 20px;
+      border: 2px solid #27272a; border-top-color: #22d3ee;
+      border-radius: 9999px; animation: spin .6s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Results card (shared styles for JS output) */
+    .card {
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 9999px;
+      font-size: .6875rem; font-weight: 600;
+    }
+    .badge-success {
+      background-color: rgba(34,197,94,0.12); color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+    .badge-danger {
+      background-color: rgba(239,68,68,0.12); color: #f87171;
+      border: 1px solid rgba(239,68,68,0.25);
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: .5rem; padding: .625rem 1.25rem;
+      border-radius: .5rem; font-size: .875rem; font-weight: 600;
+      min-height: 44px; cursor: pointer; border: none;
+      transition: background-color .15s, box-shadow .15s;
+    }
+    .btn-primary {
+      background-color: #22d3ee; color: #000;
+      box-shadow: 0 0 15px rgba(6,182,212,0.2);
+    }
+    .btn-primary:hover { background-color: #67e8f9; box-shadow: 0 0 24px rgba(6,182,212,0.35); }
+    .text-subheadline { font-size: .9375rem; }
+    .text-tertiary-label { color: #71717a; }
+    .font-mono { font-family: "JetBrains Mono", monospace; }
+    .font-medium { font-weight: 500; }
+
+    /* Privacy notice */
+    .privacy-notice {
+      display: flex; align-items: flex-start; gap: .75rem;
+      margin-top: 1.5rem; padding: 1rem 1.25rem;
+      background-color: rgba(6,182,212,0.04);
+      border: 1px solid rgba(6,182,212,0.12);
+      border-radius: .75rem;
+      font-size: .75rem; color: #71717a; line-height: 1.6;
+    }
+    .privacy-icon {
+      width: 18px; height: 18px; border-radius: 50%;
+      background-color: rgba(6,182,212,0.1); color: #22d3ee;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .privacy-icon svg { width: 12px; height: 12px; }
+
+    /* Site footer */
+    .site-footer {
+      border-top: 1px solid #27272a; padding: 1.5rem;
+      text-align: center; font-size: .8125rem; color: #3f3f46;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="index.html" class="site-logo">
+        <span class="site-logo-icon">◈</span>
+        <span>DomainPlatform</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="domains.html" class="site-nav-link">Domains</a>
+        <a href="pricing.html" class="site-nav-link">Pricing</a>
+        <a href="transfer-domain.html" class="site-nav-link">Transfer</a>
+        <a href="whois.html" class="site-nav-link active">WHOIS</a>
+        <a href="support.html" class="site-nav-link">Support</a>
+      </nav>
+      <div class="site-actions">
+        <a href="cart.html" class="site-cart" aria-label="Cart">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-13z"/><path d="M6 6L5 2H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+          <span data-cart-count class="site-cart-badge hidden">0</span>
+        </a>
+        <a href="login.html" class="site-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="site-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="site-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="site-login" data-auth-user style="display:none">Log out</button>
+      </div>
+      <button id="mobile-menu-button" class="mobile-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+        <svg id="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg id="icon-close" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile drawer -->
+  <div id="mobile-menu" class="mobile-drawer hidden">
+    <div class="mobile-drawer-backdrop" data-mobile-close></div>
+    <div class="mobile-drawer-panel">
+      <div class="mobile-drawer-header">
+        <a href="index.html" class="site-logo"><span class="site-logo-icon">◈</span><span>DomainPlatform</span></a>
+        <button id="mobile-menu-close" class="mobile-drawer-close" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <nav class="mobile-drawer-nav" aria-label="Mobile">
+        <a href="domains.html" class="mobile-drawer-link">Domains</a>
+        <a href="pricing.html" class="mobile-drawer-link">Pricing</a>
+        <a href="transfer-domain.html" class="mobile-drawer-link">Transfer Domain</a>
+        <a href="whois.html" class="mobile-drawer-link">WHOIS Lookup</a>
+        <a href="support.html" class="mobile-drawer-link">Support</a>
+      </nav>
+      <div class="mobile-drawer-actions">
+        <a href="login.html" class="mobile-drawer-login" data-auth-guest>Log in</a>
+        <a href="register.html" class="mobile-drawer-cta" data-auth-guest>Create account</a>
+        <a href="client-dashboard.html" class="mobile-drawer-login" data-auth-user style="display:none">Dashboard</a>
+        <button onclick="logout()" class="mobile-drawer-login" data-auth-user style="display:none">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <main id="whois-root">
+    <div class="whois-page">
+      <!-- Hero -->
+      <h1 class="whois-title">WHOIS lookup</h1>
+      <p class="whois-sub">Privacy-aware — personal data redacted. Mock data now; real WHOIS must be served server-side.</p>
+
+      <!-- Search bar -->
+      <form id="whois-form" class="whois-search">
+        <label for="whois-input" class="sr-only">Domain name</label>
+        <input id="whois-input" type="search" placeholder="example.com" class="whois-search-input" required />
+        <button type="submit" class="whois-search-btn">Lookup</button>
+      </form>
+
+      <!-- Loading -->
+      <div id="whois-loading" class="whois-loading" hidden>
+        <div class="whois-spinner"></div>
+        <span>Looking up domain data…</span>
+      </div>
+
+      <!-- Results -->
+      <div id="whois-result" style="margin-top:1.5rem;"></div>
+
+      <!-- Privacy notice -->
+      <div class="privacy-notice">
+        <span class="privacy-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </span>
+        <span>This tool does not expose real personal data. For privacy-enabled domains we show "redacted" placeholders by design. WHOIS data is shown with privacy — personal data redacted.</span>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

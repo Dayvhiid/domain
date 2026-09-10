@@ -1,0 +1,323 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Checkout — DomainPlatform</title>
+  <meta name="description" content="Complete your domain registration order." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/output.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(16px);
+      background-color: rgba(9,9,11,0.8);
+    }
+    .header-inner {
+      max-width: 80rem; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 1rem;
+    }
+    .logo {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: "Syne", sans-serif; font-weight: 700; font-size: 1.125rem;
+      color: #ffffff; letter-spacing: -0.02em;
+    }
+    .logo-icon {
+      display: grid; place-items: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background-color: #22d3ee; color: #000;
+      font-size: .875rem; font-weight: 700;
+    }
+    .ssl-badge {
+      display: inline-flex; align-items: center; gap: .375rem;
+      padding: .375rem .75rem; border-radius: 9999px;
+      font-size: .6875rem; font-weight: 500;
+      color: #4ade80; background: rgba(34,197,94,0.08);
+      border: 1px solid rgba(34,197,94,0.15);
+    }
+    @media (max-width: 640px) { .ssl-badge span { display: none; } }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid rgba(255,255,255,0.06); padding: 1.5rem;
+      text-align: center; font-size: .8125rem; color: #3f3f46;
+      margin-top: 3rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon">◈</span>
+        <span>DomainPlatform</span>
+      </a>
+      <div class="ssl-badge">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>256-Bit Encrypted Checkout</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div style="max-width:72rem;margin:0 auto;padding:2.5rem 1.5rem;">
+
+      <!-- Page title -->
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:2rem;">
+        <h1 style="font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.75rem,4vw,2.5rem);line-height:1.15;letter-spacing:-0.03em;color:#ffffff;">Checkout</h1>
+        <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:9999px;font-size:.6875rem;font-weight:600;color:#fbbf24;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);">Prototype Mode</span>
+      </div>
+
+      <!-- Two-column grid -->
+      <style>@media(min-width:1024px){.co-layout{grid-template-columns:2fr 1fr !important;}}</style>
+      <div class="co-layout" style="display:grid;grid-template-columns:1fr;gap:2rem;">
+
+        <!-- Left column: Forms -->
+        <form id="checkout-form" style="display:flex;flex-direction:column;gap:1.5rem;" data-validate novalidate>
+
+          <!-- Account Details -->
+          <div style="background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1.5rem;">
+            <h2 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#ffffff;margin-bottom:1.25rem;">Account details</h2>
+            <div style="display:grid;grid-template-columns:1fr;gap:1rem;">
+              <style>@media(min-width:768px){.co-fields{grid-template-columns:repeat(2,1fr) !important;}}</style>
+              <div class="co-fields" style="display:grid;grid-template-columns:1fr;gap:1rem;">
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:500;color:#a1a1aa;margin-bottom:.375rem;">Full name</label>
+                  <input id="co-name" required placeholder="Ada Lovelace" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:.5rem;padding:10px 14px;font-size:.875rem;color:#f4f4f5;font-family:inherit;transition:border-color .15s;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:500;color:#a1a1aa;margin-bottom:.375rem;">Email</label>
+                  <input id="co-email" type="email" required placeholder="ada@example.com" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:.5rem;padding:10px 14px;font-size:.875rem;color:#f4f4f5;font-family:inherit;transition:border-color .15s;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:500;color:#a1a1aa;margin-bottom:.375rem;">Organization</label>
+                  <input id="co-org" placeholder="Optional" style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:.5rem;padding:10px 14px;font-size:.875rem;color:#f4f4f5;font-family:inherit;transition:border-color .15s;" />
+                </div>
+                <div>
+                  <label style="display:block;font-size:.75rem;font-weight:500;color:#a1a1aa;margin-bottom:.375rem;">Phone number</label>
+                  <input id="co-phone" type="tel" placeholder="+27 ..." style="width:100%;background:#18181b;border:1px solid #27272a;border-radius:.5rem;padding:10px 14px;font-size:.875rem;color:#f4f4f5;font-family:inherit;transition:border-color .15s;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div style="background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1.5rem;">
+            <h2 style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#ffffff;margin-bottom:1.25rem;">Payment method</h2>
+            <div style="display:flex;flex-direction:column;gap:.75rem;" id="payment-options">
+              <!-- Card -->
+              <label class="pay-option" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#18181b;border:1px solid #27272a;border-radius:.75rem;cursor:pointer;transition:all .15s;">
+                <input type="radio" name="pay" value="card" checked style="display:none;" />
+                <div class="pay-icon" style="width:40px;height:40px;border-radius:8px;background:rgba(6,182,212,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="22" height="16" x="1" y="4" rx="2"/><path d="M1 10h22"/></svg>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;font-size:.875rem;color:#f4f4f5;">Credit / Debit Card</div>
+                  <div style="font-size:.75rem;color:#52525b;margin-top:.125rem;">Visa, Mastercard, Amex</div>
+                </div>
+                <div class="pay-check" style="width:20px;height:20px;border-radius:9999px;border:2px solid #27272a;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" style="display:none;"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+              </label>
+              <!-- Bank Transfer -->
+              <label class="pay-option" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#18181b;border:1px solid #27272a;border-radius:.75rem;cursor:pointer;transition:all .15s;">
+                <input type="radio" name="pay" value="bank" style="display:none;" />
+                <div class="pay-icon" style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16"/><path d="M2 18h20"/><path d="m6 18-4-8 4-4 4 4 4-4 4 4 4-4"/><rect x="6" y="2" width="4" height="16" rx="1"/></svg>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;font-size:.875rem;color:#f4f4f5;">Bank Transfer</div>
+                  <div style="font-size:.75rem;color:#52525b;margin-top:.125rem;">Direct EFT / wire transfer</div>
+                </div>
+                <div class="pay-check" style="width:20px;height:20px;border-radius:9999px;border:2px solid #27272a;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" style="display:none;"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+              </label>
+              <!-- Invoice -->
+              <label class="pay-option" style="display:flex;align-items:center;gap:1rem;padding:1rem;background:#18181b;border:1px solid #27272a;border-radius:.75rem;cursor:pointer;transition:all .15s;">
+                <input type="radio" name="pay" value="invoice" style="display:none;" />
+                <div class="pay-icon" style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#71717a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;font-size:.875rem;color:#f4f4f5;">Pay on Invoice</div>
+                  <div style="font-size:.75rem;color:#52525b;margin-top:.125rem;">Pay within 7 days via invoice</div>
+                </div>
+                <div class="pay-check" style="width:20px;height:20px;border-radius:9999px;border:2px solid #27272a;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" style="display:none;"><path d="M20 6 9 17l-5-5"/></svg>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Terms & Submit -->
+          <div style="background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1.5rem;">
+            <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer;margin-bottom:1.25rem;">
+              <input type="checkbox" id="co-terms" required style="margin-top:3px;width:16px;height:16px;accent-color:#22d3ee;cursor:pointer;flex-shrink:0;" />
+              <span style="font-size:.8125rem;color:#71717a;line-height:1.5;">I agree to the <a href="legal/terms.html" style="color:#22d3ee;">Terms &amp; Conditions</a> and understand this is a prototype checkout.</span>
+            </label>
+            <button id="checkout-submit" type="submit" style="display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.875rem;font-size:.9375rem;font-weight:600;color:#000;background:#22d3ee;border:none;border-radius:.5rem;cursor:pointer;font-family:inherit;box-shadow:0 0 20px rgba(6,182,212,0.2);min-height:48px;transition:all .15s;">
+              Complete checkout
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- Right column: Order Summary -->
+        <div style="position:sticky;top:80px;align-self:start;background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:1rem;padding:1.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.3);">
+          <h2 style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9375rem;color:#ffffff;margin-bottom:1.25rem;">Order summary</h2>
+
+          <div id="checkout-items" style="display:flex;flex-direction:column;gap:.75rem;margin-bottom:1rem;"></div>
+
+          <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:1rem;display:flex;flex-direction:column;gap:.625rem;">
+            <div style="display:flex;justify-content:space-between;font-size:.8125rem;">
+              <span style="color:#71717a;">Subtotal</span>
+              <span id="co-subtotal" style="color:#d4d4d8;font-weight:500;font-variant-numeric:tabular-nums;">—</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.8125rem;">
+              <span style="color:#71717a;">Estimated taxes</span>
+              <span style="color:#d4d4d8;font-weight:500;">R0.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.8125rem;">
+              <span style="color:#71717a;">WHOIS privacy</span>
+              <span style="color:#22d3ee;font-weight:600;">FREE</span>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;padding-top:1rem;margin-top:.75rem;border-top:1px solid rgba(255,255,255,0.06);font-size:1.125rem;font-weight:700;color:#ffffff;">
+            <span>Total</span>
+            <span id="co-total" style="font-variant-numeric:tabular-nums;">—</span>
+          </div>
+
+          <!-- Success state -->
+          <div id="checkout-success" hidden style="margin-top:1.25rem;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.15);border-radius:.75rem;padding:1rem;">
+            <div style="font-weight:600;color:#4ade80;font-size:.875rem;">Order placed!</div>
+            <p style="font-size:.75rem;color:#71717a;margin-top:.375rem;">No real domain was registered. In production you'd receive a confirmation email.</p>
+            <a href="client-dashboard.html" style="display:flex;align-items:center;justify-content:center;width:100%;padding:.625rem;margin-top:.75rem;font-size:.8125rem;font-weight:600;color:#000;background:#4ade80;border-radius:.375rem;">Go to dashboard</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // ─── Payment option cards ─────────────────────────
+      const payOptions = document.querySelectorAll('.pay-option');
+      function updatePayUI() {
+        payOptions.forEach(opt => {
+          const radio = opt.querySelector('input[type="radio"]');
+          const check = opt.querySelector('.pay-check svg');
+          const icon = opt.querySelector('.pay-icon');
+          const isActive = radio.checked;
+          opt.style.borderColor = isActive ? 'rgba(6,182,212,0.5)' : '#27272a';
+          opt.style.backgroundColor = isActive ? 'rgba(6,182,212,0.05)' : '#18181b';
+          if (check) check.style.display = isActive ? 'block' : 'none';
+          if (opt.querySelector('.pay-check')) {
+            opt.querySelector('.pay-check').style.borderColor = isActive ? '#22d3ee' : '#27272a';
+            opt.querySelector('.pay-check').style.backgroundColor = isActive ? '#22d3ee' : 'transparent';
+          }
+          if (icon) icon.style.backgroundColor = isActive ? 'rgba(6,182,212,0.15)' : 'rgba(255,255,255,0.04)';
+          // Update icon stroke color
+          const svg = icon?.querySelector('svg');
+          if (svg) svg.setAttribute('stroke', isActive ? '#22d3ee' : '#71717a');
+        });
+      }
+      payOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+          opt.querySelector('input[type="radio"]').checked = true;
+          updatePayUI();
+        });
+      });
+      updatePayUI();
+
+      // ─── Cart items in summary ────────────────────────
+      const itemsEl = document.getElementById('checkout-items');
+      const items = JSON.parse(localStorage.getItem('dr_cart_v1') || '[]');
+      const fmtPrice = (n) => `R${Number(n).toFixed(2)}`;
+
+      if (items.length === 0) {
+        itemsEl.innerHTML = `<p style="font-size:.8125rem;color:#52525b;">Cart empty — <a href="index.html" style="color:#22d3ee;">search domains</a></p>`;
+      } else {
+        itemsEl.innerHTML = items.map(i => `
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8125rem;gap:.5rem;">
+            <div style="min-width:0;flex:1;">
+              <div style="font-weight:500;color:#d4d4d8;word-break:break-all;">${i.domain}</div>
+              <div style="font-size:.6875rem;color:#52525b;">${i.years}yr registration</div>
+            </div>
+            <div style="font-weight:600;color:#f4f4f5;font-variant-numeric:tabular-nums;white-space:nowrap;">${fmtPrice(i.registration * i.years)}</div>
+          </div>
+        `).join('');
+      }
+
+      const subtotal = items.reduce((s, i) => s + i.registration * i.years, 0);
+      document.getElementById('co-subtotal').textContent = fmtPrice(subtotal);
+      document.getElementById('co-total').textContent = fmtPrice(subtotal);
+
+      // ─── Form submit ──────────────────────────────────
+      document.getElementById('checkout-form').addEventListener('submit', e => {
+        e.preventDefault();
+        let valid = true;
+        e.target.querySelectorAll('[required]').forEach(inp => {
+          if (inp.type === 'checkbox' ? !inp.checked : !inp.value.trim()) {
+            valid = false;
+            inp.style.borderColor = '#ef4444';
+          } else {
+            inp.style.borderColor = '#27272a';
+          }
+          if (inp.type === 'email' && inp.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inp.value)) {
+            valid = false;
+            inp.style.borderColor = '#ef4444';
+          }
+        });
+        if (!valid) { toast('Fix highlighted fields', 'error'); return; }
+
+        const btn = document.getElementById('checkout-submit');
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+
+        setTimeout(() => {
+          btn.textContent = 'Order placed ✓';
+          btn.style.backgroundColor = '#4ade80';
+          btn.style.boxShadow = '0 0 20px rgba(34,197,94,0.2)';
+          document.getElementById('checkout-success').hidden = false;
+          toast('Order successful — cart will clear', 'success');
+          setTimeout(() => { localStorage.setItem('dr_cart_v1', '[]'); }, 800);
+        }, 1300);
+      });
+
+      if (window.Cart) Cart.updateBadge();
+    });
+  </script>
+</body>
+</html>

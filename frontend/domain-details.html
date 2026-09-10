@@ -1,0 +1,641 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Domain details — DomainPlatform</title>
+  <meta name="description" content="Manage your domain settings, DNS, nameservers and security." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/output.css">
+  <style>
+    :root {
+      --bg: #0A0A0C;
+      --bg-elevated: #141417;
+      --text-primary: #F2F2F0;
+      --text-secondary: #8B8B90;
+      --accent: #00F0FF;
+      --border: rgba(255,255,255,0.08);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #F5F5F7;
+        --bg-elevated: #FFFFFF;
+        --text-primary: #1D1D1F;
+        --text-secondary: #6E6E73;
+        --accent: #00A8E8;
+        --border: rgba(0,0,0,0.08);
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background-color: #09090b;
+      color: #f4f4f5;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* Header */
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      border-bottom: 1px solid #27272a;
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(0,0,0,0.7);
+    }
+    .site-header-inner {
+      max-width: 80rem; margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; gap: 1rem;
+    }
+    .site-logo {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: "Syne", sans-serif; font-weight: 700; font-size: 1.125rem;
+      color: #ffffff; letter-spacing: -0.02em; flex-shrink: 0;
+    }
+    .site-logo-icon {
+      display: grid; place-items: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background-color: #22d3ee; color: #000;
+      font-size: .875rem; font-weight: 700;
+    }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: .375rem;
+      padding: .5rem 1rem; border-radius: 8px;
+      font-size: .8125rem; font-weight: 500;
+      color: #a1a1aa; border: 1px solid #27272a;
+      transition: all .15s;
+    }
+    .back-btn:hover { color: #d4d4d8; border-color: #3f3f46; background-color: rgba(255,255,255,0.03); }
+
+    /* Page */
+    .detail-page {
+      max-width: 72rem; margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Domain hero */
+    .domain-hero {
+      display: flex; flex-wrap: wrap; align-items: center;
+      justify-content: space-between; gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .domain-hero-name {
+      font-family: "JetBrains Mono", monospace; font-weight: 700;
+      font-size: clamp(1.25rem, 3vw, 1.75rem); color: #ffffff;
+    }
+    .domain-hero-meta {
+      display: flex; align-items: center; gap: .75rem;
+      margin-top: .375rem; flex-wrap: wrap;
+    }
+    .domain-badge {
+      display: inline-flex; align-items: center;
+      padding: 3px 10px; border-radius: 9999px;
+      font-size: .6875rem; font-weight: 600;
+    }
+    .badge-active {
+      background-color: rgba(34,197,94,0.12); color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.25);
+    }
+    .domain-dates {
+      font-size: .75rem; color: #52525b;
+    }
+    .auto-renew-toggle {
+      display: flex; align-items: center; gap: .625rem;
+      padding: .5rem .875rem; border-radius: 9999px;
+      border: 1px solid #27272a; background-color: #121214;
+    }
+    .auto-renew-label { font-size: .8125rem; color: #a1a1aa; }
+    .toggle {
+      position: relative; display: inline-flex;
+      cursor: pointer;
+    }
+    .toggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      width: 40px; height: 22px; border-radius: 9999px;
+      background-color: #3f3f46; transition: background-color .2s;
+      position: relative;
+    }
+    .toggle-track::after {
+      content: ""; position: absolute;
+      top: 3px; left: 3px;
+      width: 16px; height: 16px; border-radius: 9999px;
+      background-color: #a1a1aa; transition: transform .2s, background-color .2s;
+    }
+    .toggle input:checked + .toggle-track {
+      background-color: #22d3ee;
+    }
+    .toggle input:checked + .toggle-track::after {
+      transform: translateX(18px); background-color: #000;
+    }
+    .toggle input:focus-visible + .toggle-track {
+      box-shadow: 0 0 0 2px rgba(6,182,212,0.4);
+    }
+
+    /* Tabs */
+    .tab-bar {
+      display: flex; gap: 0;
+      border-bottom: 1px solid #27272a;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      padding: .75rem 1rem;
+      font-size: .8125rem; font-weight: 500;
+      color: #71717a; border: none; background: none;
+      cursor: pointer; white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: #d4d4d8; }
+    .tab-btn[aria-selected="true"] {
+      color: #22d3ee; border-bottom-color: #22d3ee; font-weight: 600;
+    }
+    .tab-btn:focus-visible {
+      outline: none;
+      box-shadow: inset 0 0 0 2px rgba(6,182,212,0.3);
+    }
+
+    /* Cards */
+    .card {
+      background-color: #121214;
+      border: 1px solid #27272a;
+      border-radius: 1rem;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #1c1c1f;
+    }
+    .card-title {
+      font-family: "Syne", sans-serif; font-weight: 700;
+      font-size: .9375rem; color: #ffffff;
+    }
+    .card-body { padding: 1.5rem; }
+
+    /* Overview grid */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 768px) { .overview-grid { grid-template-columns: 1fr; } }
+    .kv-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 480px) { .kv-grid { grid-template-columns: 1fr; } }
+    .kv-label { font-size: .75rem; color: #52525b; margin-bottom: .25rem; }
+    .kv-value { font-size: .875rem; color: #e4e4e7; font-weight: 500; }
+    .kv-tag {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 9999px;
+      font-size: .6875rem; font-weight: 500;
+      background-color: rgba(6,182,212,0.08); color: #22d3ee;
+      border: 1px solid rgba(6,182,212,0.2);
+    }
+
+    /* Security card */
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; padding: 1rem 0;
+      border-bottom: 1px solid #1c1c1f;
+    }
+    .setting-row:last-child { border-bottom: none; }
+    .setting-info {}
+    .setting-title { font-size: .875rem; color: #e4e4e7; font-weight: 500; }
+    .setting-desc { font-size: .75rem; color: #52525b; margin-top: .125rem; }
+
+    /* DNS table */
+    .dns-table { width: 100%; }
+    .dns-row {
+      display: grid;
+      grid-template-columns: 60px 100px 1fr 80px 100px;
+      gap: .5rem; align-items: center;
+      padding: .875rem 1.5rem;
+      border-bottom: 1px solid #1c1c1f;
+      font-size: .8125rem;
+      transition: background-color .15s;
+    }
+    .dns-row:last-child { border-bottom: none; }
+    .dns-row:hover { background-color: rgba(255,255,255,0.015); }
+    .dns-row-header {
+      font-size: .6875rem; font-weight: 600; color: #52525b;
+      text-transform: uppercase; letter-spacing: .04em;
+      border-bottom: 1px solid #27272a;
+    }
+    .dns-row-header:hover { background-color: transparent; }
+    .dns-type {
+      font-family: "JetBrains Mono", monospace; font-weight: 600;
+      color: #22d3ee; font-size: .75rem;
+    }
+    .dns-host { color: #d4d4d8; }
+    .dns-value {
+      font-family: "JetBrains Mono", monospace;
+      color: #a1a1aa; font-size: .75rem;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dns-ttl { color: #52525b; }
+    .dns-actions { display: flex; gap: .5rem; }
+    .dns-action {
+      font-size: .75rem; font-weight: 500; cursor: pointer;
+      background: none; border: none; font-family: inherit;
+      padding: 0; transition: color .15s;
+    }
+    .dns-action--edit { color: #22d3ee; }
+    .dns-action--edit:hover { color: #67e8f9; }
+    .dns-action--delete { color: #f87171; }
+    .dns-action--delete:hover { color: #fca5a5; }
+    @media (max-width: 640px) {
+      .dns-row { grid-template-columns: 50px 1fr 80px; }
+      .dns-host, .dns-ttl { display: none; }
+    }
+
+    /* Nameservers */
+    .ns-option {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: 1rem; border-radius: .75rem;
+      border: 1px solid #27272a; cursor: pointer;
+      transition: border-color .15s, background-color .15s;
+    }
+    .ns-option:has(input:checked) {
+      border-color: rgba(6,182,212,0.4);
+      background-color: rgba(6,182,212,0.04);
+    }
+    .ns-option input[type="radio"] {
+      width: 18px; height: 18px; margin-top: 2px;
+      accent-color: #06b6d4; flex-shrink: 0;
+    }
+    .ns-title { font-size: .875rem; color: #e4e4e7; font-weight: 500; }
+    .ns-value {
+      font-family: "JetBrains Mono", monospace;
+      font-size: .75rem; color: #52525b; margin-top: .25rem;
+    }
+    .ns-inputs {
+      display: grid; grid-template-columns: 1fr 1fr; gap: .75rem;
+      margin-top: 1rem;
+    }
+    @media (max-width: 480px) { .ns-inputs { grid-template-columns: 1fr; } }
+    .form-input {
+      width: 100%;
+      background-color: #09090b;
+      border: 1px solid #27272a;
+      border-radius: .5rem;
+      padding: .625rem .875rem;
+      font-size: .8125rem;
+      color: #ffffff;
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .form-input::placeholder { color: #52525b; }
+    .form-input:focus {
+      border-color: #06b6d4;
+      box-shadow: 0 0 0 2px rgba(6,182,212,0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: .5rem; padding: .625rem 1.25rem;
+      border-radius: .5rem; font-size: .8125rem; font-weight: 600;
+      min-height: 40px; cursor: pointer; border: none;
+      font-family: inherit; transition: all .15s;
+    }
+    .btn-primary {
+      background-color: #22d3ee; color: #000;
+      box-shadow: 0 0 12px rgba(6,182,212,0.2);
+    }
+    .btn-primary:hover { background-color: #67e8f9; box-shadow: 0 0 20px rgba(6,182,212,0.3); }
+    .btn-outline {
+      background-color: transparent; color: #d4d4d8;
+      border: 1px solid #3f3f46;
+    }
+    .btn-outline:hover { border-color: #52525b; color: #ffffff; }
+    .btn-sm { padding: .375rem .75rem; font-size: .75rem; min-height: 32px; }
+    .btn-danger-outline {
+      background-color: transparent; color: #f87171;
+      border: 1px solid rgba(248,113,113,0.25);
+    }
+    .btn-danger-outline:hover { background-color: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.4); }
+    .btn-warning-outline {
+      background-color: transparent; color: #fbbf24;
+      border: 1px solid rgba(251,191,36,0.25);
+    }
+    .btn-warning-outline:hover { background-color: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.4); }
+
+    /* Form label */
+    .form-label {
+      display: block; font-size: .75rem; font-weight: 500;
+      color: #a1a1aa; margin-bottom: .375rem;
+    }
+
+    /* Transfer warning */
+    .transfer-warning {
+      padding: 1.25rem 1.5rem; border-radius: .75rem;
+      background-color: rgba(251,191,36,0.04);
+      border: 1px solid rgba(251,191,36,0.15);
+      font-size: .75rem; color: #a1a1aa; line-height: 1.5;
+      margin-top: 1rem;
+    }
+
+    /* Content sections */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid #27272a; padding: 1.5rem;
+      text-align: center; font-size: .8125rem; color: #3f3f46;
+      margin-top: 2rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="index.html" class="site-logo">
+        <span class="site-logo-icon">◈</span>
+        <span>DomainPlatform</span>
+      </a>
+      <a href="client-dashboard.html" class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Back to Dashboard
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="detail-page">
+      <!-- Domain hero -->
+      <div class="domain-hero">
+        <div>
+          <h1 class="domain-hero-name">mybusiness.com</h1>
+          <div class="domain-hero-meta">
+            <span class="domain-badge badge-active">Active</span>
+            <span class="domain-dates">Registered 2023-08-12 · Expires 2027-08-12</span>
+          </div>
+        </div>
+        <div class="auto-renew-toggle">
+          <span class="auto-renew-label">Auto-renew</span>
+          <label class="toggle">
+            <input type="checkbox" checked data-toggle aria-pressed="true" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn" data-tab-button="overview" aria-selected="true" role="tab">Overview</button>
+        <button class="tab-btn" data-tab-button="dns" aria-selected="false" role="tab">DNS</button>
+        <button class="tab-btn" data-tab-button="ns" aria-selected="false" role="tab">Nameservers</button>
+        <button class="tab-btn" data-tab-button="contact" aria-selected="false" role="tab">Contact / WHOIS</button>
+        <button class="tab-btn" data-tab-button="renew" aria-selected="false" role="tab">Renewal</button>
+        <button class="tab-btn" data-tab-button="transfer" aria-selected="false" role="tab">Transfer Out</button>
+      </div>
+
+      <!-- Overview tab -->
+      <div data-tab-panel="overview" class="tab-content active">
+        <div class="overview-grid">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Overview</h2></div>
+            <div class="card-body">
+              <div class="kv-grid">
+                <div>
+                  <div class="kv-label">Registrar</div>
+                  <div class="kv-value">DomainPlatform (reseller)</div>
+                </div>
+                <div>
+                  <div class="kv-label">Status</div>
+                  <div class="kv-value"><span class="kv-tag">clientTransferProhibited</span></div>
+                </div>
+                <div>
+                  <div class="kv-label">Auto-renew</div>
+                  <div class="kv-value" style="color:#4ade80;">Enabled</div>
+                </div>
+                <div>
+                  <div class="kv-label">Privacy</div>
+                  <div class="kv-value">Enabled — WHOIS redacted</div>
+                </div>
+                <div>
+                  <div class="kv-label">Created</div>
+                  <div class="kv-value">2023-08-12</div>
+                </div>
+                <div>
+                  <div class="kv-label">Expires</div>
+                  <div class="kv-value">2027-08-12</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Security & Privacy</h2></div>
+            <div class="card-body">
+              <div class="setting-row">
+                <div class="setting-info">
+                  <div class="setting-title">Registrar lock</div>
+                  <div class="setting-desc">Prevents unauthorized transfers</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked data-toggle aria-pressed="true" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <div class="setting-row">
+                <div class="setting-info">
+                  <div class="setting-title">WHOIS privacy</div>
+                  <div class="setting-desc">Hides personal data from public lookups</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked data-toggle aria-pressed="true" />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DNS tab -->
+      <div data-tab-panel="dns" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">DNS records</h2>
+            <button onclick="toast('Add record is mock — real DNS requires server-side API','default')" class="btn btn-primary btn-sm">+ Add record</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <div class="dns-table">
+              <div class="dns-row dns-row-header">
+                <div>Type</div><div>Host</div><div>Value</div><div>TTL</div><div></div>
+              </div>
+              <div class="dns-row">
+                <div class="dns-type">A</div>
+                <div class="dns-host">@</div>
+                <div class="dns-value">76.76.21.21</div>
+                <div class="dns-ttl">3600</div>
+                <div class="dns-actions">
+                  <button onclick="toast('Edit mock')" class="dns-action dns-action--edit">Edit</button>
+                  <button onclick="toast('Delete requires confirmation mock','error')" class="dns-action dns-action--delete">Delete</button>
+                </div>
+              </div>
+              <div class="dns-row">
+                <div class="dns-type">CNAME</div>
+                <div class="dns-host">www</div>
+                <div class="dns-value">mybusiness.com</div>
+                <div class="dns-ttl">3600</div>
+                <div class="dns-actions">
+                  <button class="dns-action dns-action--edit">Edit</button>
+                  <button class="dns-action dns-action--delete">Delete</button>
+                </div>
+              </div>
+              <div class="dns-row">
+                <div class="dns-type">MX</div>
+                <div class="dns-host">@</div>
+                <div class="dns-value">mail.mybusiness.com (10)</div>
+                <div class="dns-ttl">3600</div>
+                <div class="dns-actions">
+                  <button class="dns-action dns-action--edit">Edit</button>
+                  <button class="dns-action dns-action--delete">Delete</button>
+                </div>
+              </div>
+              <div class="dns-row">
+                <div class="dns-type">TXT</div>
+                <div class="dns-host">@</div>
+                <div class="dns-value">v=spf1 include:_spf.example.com ~all</div>
+                <div class="dns-ttl">3600</div>
+                <div class="dns-actions">
+                  <button class="dns-action dns-action--edit">Edit</button>
+                  <button class="dns-action dns-action--delete">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nameservers tab -->
+      <div data-tab-panel="ns" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Nameservers</h2></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:.75rem;">
+              <label class="ns-option">
+                <input type="radio" name="ns" checked />
+                <div>
+                  <div class="ns-title">Default nameservers</div>
+                  <div class="ns-value">ns1.domainplatform.example · ns2.domainplatform.example</div>
+                </div>
+              </label>
+              <label class="ns-option">
+                <input type="radio" name="ns" />
+                <div>
+                  <div class="ns-title">Custom nameservers</div>
+                  <div class="ns-value">Use your own nameservers</div>
+                </div>
+              </label>
+            </div>
+            <div class="ns-inputs">
+              <input placeholder="ns1.custom.example" class="form-input" />
+              <input placeholder="ns2.custom.example" class="form-input" />
+            </div>
+            <button onclick="toast('Nameservers saved (mock)','success')" class="btn btn-primary" style="margin-top:1rem;">Save nameservers</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact tab -->
+      <div data-tab-panel="contact" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Registrant / WHOIS contact</h2></div>
+          <div class="card-body">
+            <p style="font-size:.75rem;color:#52525b;margin-bottom:1rem;">Privacy redacted where enabled — real updates require server-side validation.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div>
+                <label class="form-label">Registrant name</label>
+                <input value="Redacted for privacy" class="form-input" style="background-color:#1c1c1f;" readonly />
+              </div>
+              <div>
+                <label class="form-label">Email</label>
+                <input value="redacted@example.com" class="form-input" style="background-color:#1c1c1f;" readonly />
+              </div>
+            </div>
+            <button onclick="toast('Contact update mock','success')" class="btn btn-outline" style="margin-top:1rem;">Update contact (mock)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Renewal tab -->
+      <div data-tab-panel="renew" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Renewal</h2></div>
+          <div class="card-body">
+            <p style="font-size:.875rem;color:#a1a1aa;margin-bottom:1rem;">Renewal price: <strong style="color:#ffffff;">$14.99/yr</strong>. Auto-renew is currently enabled.</p>
+            <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+              <div style="flex:1;min-width:200px;">
+                <label class="form-label">Term</label>
+                <select class="form-input">
+                  <option>1 year — $14.99</option>
+                  <option>2 years — $29.98</option>
+                  <option>5 years — $74.95</option>
+                </select>
+              </div>
+              <button onclick="toast('Renewed (mock) — no charge','success')" class="btn btn-primary">Renew now (mock)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Transfer tab -->
+      <div data-tab-panel="transfer" class="tab-content">
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Transfer out</h2></div>
+          <div class="card-body">
+            <p style="font-size:.875rem;color:#a1a1aa;margin-bottom:1rem;">To transfer away you'll need the auth/EPP code. Domain must be unlocked and registrar lock disabled.</p>
+            <button onclick="if(confirm('Generate EPP code (mock)?')) toast('EPP code generated (mock): ABC-XYZ-123 — would be emailed in production','success')" class="btn btn-warning-outline">Generate auth code (mock)</button>
+            <div class="transfer-warning">
+              <strong style="color:#fbbf24;">Warning:</strong> Transferring a domain away is irreversible through this interface. The losing registrar process takes 5–7 days. Always verify the gaining registrar details before initiating.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+  <script type="module" src="js/main.js"></script>
+  <script type="module">
+    async function checkAuth() {
+      try {
+        const result = await API.authApi.getMe();
+        if (!result?.user) {
+          window.toast('Please log in to access this page.', 'default');
+          setTimeout(() => location.href = 'login.html', 300);
+          return;
+        }
+        window.APP_USER = result.user;
+      } catch {
+        window.toast('Please log in to access this page.', 'default');
+        setTimeout(() => location.href = 'login.html', 300);
+      }
+    }
+    checkAuth();
+  </script>
+</body>
+</html>

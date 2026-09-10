@@ -26,8 +26,8 @@ jobs:
         uses: burnett01/rsync-deployments@7.0.1
         with:
           switches: -avz --delete
-          path: frontend/build/
-          remote_path: /home/starswe1/domains/hozmashop.co.za/public_html/
+          path: frontend/dist/
+          remote_path: /home/starswe1/domains/3starswebhosting.co.za/public_html/
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
