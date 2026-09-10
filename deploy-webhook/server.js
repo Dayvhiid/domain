@@ -7,16 +7,15 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
-const WEBHOOK_SECRETS = {
-  'domain-platform': process.env.WEBHOOK_SECRET,
-};
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+if (!WEBHOOK_SECRET) {
+  console.error('FATAL: WEBHOOK_SECRET not set in .env');
+  process.exit(1);
+}
 
-const DEPLOY_SCRIPTS = {
-  'domain-platform': path.join(__dirname, 'scripts', 'deploy-all.sh'),
-};
-
+const DEPLOY_SCRIPT = path.join(__dirname, 'scripts', 'deploy-all.sh');
 const LOG_FILE = path.join(__dirname, 'deploy.log');
 const locks = new Set();
 
@@ -26,22 +25,21 @@ function log(message) {
   process.stdout.write(line);
 }
 
-function verifySignature(payload, signature) {
+function verifySignature(rawBody, signature) {
   if (!signature) return false;
-  const repoName = payload?.repository?.name;
-  const secret = WEBHOOK_SECRETS[repoName];
-  if (!secret) return false;
-
-  const expected = 'sha256=' + crypto.createHmac('sha256', secret).update(JSON.stringify(payload)).digest('hex');
+  const expected = 'sha256=' + crypto.createHmac('sha256', WEBHOOK_SECRET).update(rawBody).digest('hex');
   return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 
-app.post('/webhook', express.json({ verify: (req, _res, buf) => { req.rawBody = buf; } }), (req, res) => {
+app.post('/webhook', express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; }
+}), (req, res) => {
   const event = req.headers['x-github-event'];
   const signature = req.headers['x-hub-signature-256'];
   const payload = req.body;
 
   if (event === 'ping') {
+    log('PING received');
     return res.sendStatus(200);
   }
 
@@ -53,7 +51,7 @@ app.post('/webhook', express.json({ verify: (req, _res, buf) => { req.rawBody = 
     return res.sendStatus(200);
   }
 
-  if (!verifySignature(payload, signature)) {
+  if (!verifySignature(req.rawBody, signature)) {
     log(`REJECTED invalid signature from ${req.ip}`);
     return res.sendStatus(401);
   }
@@ -61,6 +59,7 @@ app.post('/webhook', express.json({ verify: (req, _res, buf) => { req.rawBody = 
   const repoName = payload.repository.name;
   const commitSha = payload.after?.slice(0, 7);
   const commitMsg = payload.head_commit?.message || 'unknown';
+  const pushedBy = payload.pusher?.name || 'unknown';
 
   res.sendStatus(200);
 
@@ -70,16 +69,9 @@ app.post('/webhook', express.json({ verify: (req, _res, buf) => { req.rawBody = 
   }
 
   locks.add(repoName);
-  log(`DEPLOY ${repoName}@${commitSha} "${commitMsg}"`);
+  log(`DEPLOY ${repoName}@${commitSha} "${commitMsg}" by ${pushedBy}`);
 
-  const scriptPath = DEPLOY_SCRIPTS[repoName];
-  if (!scriptPath) {
-    log(`ERROR no deploy script for repo "${repoName}"`);
-    locks.delete(repoName);
-    return;
-  }
-
-  execFile('bash', [scriptPath], { timeout: 300000 }, (error, stdout, stderr) => {
+  execFile('bash', [DEPLOY_SCRIPT], { timeout: 300000 }, (error, stdout, stderr) => {
     locks.delete(repoName);
     if (error) {
       log(`FAIL ${repoName}@${commitSha}: ${error.message}`);

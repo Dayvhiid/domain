@@ -1,30 +1,37 @@
 #!/bin/bash
 set -euo pipefail
 
-MONOREPO_DIR="/home/starswe1/domains/api.3starswebhosting.co.za"
-FRONTEND_DIST="$MONOREPO_DIR/frontend/dist"
+MONOREPO="/home/starswe1/domains/domain"
+FRONTEND_BUILD="$MONOREPO/frontend/dist"
 FRONTEND_DEPLOY="/home/starswe1/domains/3starswebhosting.co.za/public_html"
-BACKEND_DIR="$MONOREPO_DIR"
+BACKEND_DIR="$MONOREPO/backend"
+LOG="/home/starswe1/domains/domain/deploy-webhook/deploy.log"
 
-echo "=== Deploy started at $(date) ==="
+log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG"; }
 
-cd "$MONOREPO_DIR"
+log "=== Deploy started ==="
+
+log "Pulling latest code..."
+cd "$MONOREPO"
 git fetch origin main
 git reset --hard origin/main
 
-echo "--- Building frontend ---"
-cd "$MONOREPO_DIR/frontend"
+log "Building frontend..."
+cd "$MONOREPO/frontend"
 npm ci
 npm run build
 
-echo "--- Deploying frontend ---"
-rsync -avz --delete "$FRONTEND_DIST/" "$FRONTEND_DEPLOY/"
+log "Deploying frontend to public_html..."
+rsync -avz --delete "$FRONTEND_BUILD/" "$FRONTEND_DEPLOY/"
 
-echo "--- Installing backend dependencies ---"
-cd "$BACKEND_DIR/backend"
+log "Installing backend dependencies..."
+cd "$BACKEND_DIR"
 npm install --omit=dev --production
 
-echo "--- Restarting backend ---"
-touch "$BACKEND_DIR/tmp/restart.txt" 2>/dev/null || true
+log "Restarting backend..."
+# DirectAdmin Passenger: touch tmp/restart.txt to trigger restart
+# Create tmp dir if it doesn't exist (needed for Passenger restart mechanism)
+mkdir -p "$BACKEND_DIR/tmp"
+touch "$BACKEND_DIR/tmp/restart.txt"
 
-echo "=== Deploy finished at $(date) ==="
+log "=== Deploy finished ==="
