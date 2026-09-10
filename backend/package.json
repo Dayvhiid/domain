@@ -1,0 +1,51 @@
+{
+  "name": "domain-reseller-backend",
+  "version": "1.0.0",
+  "description": "Domain Reseller Platform - Backend API with Domains.co.za integration",
+  "main": "src/bootstrap.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/bootstrap.js",
+    "start": "node src/bootstrap.js",
+    "test": "jest --coverage",
+    "lint": "eslint src/",
+    "db:seed": "node src/scripts/seed.js"
+  },
+  "keywords": [
+    "domain",
+    "reseller",
+    "domains-co-za",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "connect-mongo": "^5.1.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
+    "helmet": "^7.1.0",
+    "mongoose": "^8.5.1",
+    "morgan": "^1.10.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

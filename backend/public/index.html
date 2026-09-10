@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Search domains — DomainPlatform</title>
+  <meta name="description" content="Search, register and manage domains with transparent pricing. 150+ extensions including .com, .ng, .co.za, .africa." />
+  <meta property="og:title" content="Search domains" />
+  <meta property="og:description" content="Transparent pricing · 150+ extensions · Fast domain search" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/main-D6hO9LM0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-pqenMiGi.css">
+</head>
+<body class="bg-bg text-primary antialiased">
+  <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 bg-bg-elevated text-primary px-4 py-2 rounded-lg">Skip to content</a>
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 border-b" style="border-color: var(--border); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background-color: color-mix(in srgb, var(--bg) 85%, transparent);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex h-16 items-center justify-between gap-4">
+        <a href="index.html" class="flex items-center gap-2 font-syne font-bold text-xl tracking-tight text-primary">
+          <span class="w-8 h-8 rounded-lg grid place-items-center text-sm" style="background-color: var(--accent); color: #000;">◈</span>
+          <span>DomainPlatform</span>
+        </a>
+        <nav class="hidden lg:flex items-center gap-1 text-sm font-medium" style="color: var(--text-secondary);">
+          <a href="domains.html" class="px-3 py-2 rounded-lg hover:text-primary transition-colors" style="color: var(--text-secondary);">Domains</a>
+          <a href="pricing.html" class="px-3 py-2 rounded-lg hover:text-primary transition-colors" style="color: var(--text-secondary);">Pricing</a>
+          <a href="transfer-domain.html" class="px-3 py-2 rounded-lg hover:text-primary transition-colors" style="color: var(--text-secondary);">Transfer</a>
+          <a href="whois.html" class="px-3 py-2 rounded-lg hover:text-primary transition-colors" style="color: var(--text-secondary);">WHOIS</a>
+          <a href="support.html" class="px-3 py-2 rounded-lg hover:text-primary transition-colors" style="color: var(--text-secondary);">Support</a>
+        </nav>
+        <div class="hidden lg:flex items-center gap-2">
+          <a href="cart.html" class="relative p-2 rounded-lg transition-colors" style="color: var(--text-secondary);" aria-label="Cart">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6h15l-1.5 9h-13z"/><path d="M6 6L5 2H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>
+            <span data-cart-count class="hidden absolute -top-1 -right-1 text-[10px] w-5 h-5 grid place-items-center rounded-full" style="background-color: var(--accent); color: #000;">0</span>
+          </a>
+          <a href="login.html" class="px-4 py-2 rounded-lg text-sm font-medium transition-colors" style="color: var(--text-secondary);">Log in</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Create account</a>
+        </div>
+        <button id="mobile-menu-button" class="lg:hidden p-3 rounded-lg border min-h-[44px] min-w-[44px] flex items-center justify-center" style="border-color: var(--border); color: var(--text-primary);" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+          <svg id="icon-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg id="icon-close" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden lg:hidden border-t" style="border-color: var(--border); background-color: var(--bg-elevated); color: var(--text-primary);">
+      <nav class="px-4 py-4 space-y-1">
+        <a href="domains.html" class="block px-3 py-3 rounded-lg hover:bg-system-fill font-medium">Domains</a>
+        <a href="pricing.html" class="block px-3 py-3 rounded-lg hover:bg-system-fill font-medium">Pricing</a>
+        <a href="transfer-domain.html" class="block px-3 py-3 rounded-lg hover:bg-system-fill font-medium">Transfer Domain</a>
+        <a href="whois.html" class="block px-3 py-3 rounded-lg hover:bg-system-fill font-medium">WHOIS Lookup</a>
+        <a href="support.html" class="block px-3 py-3 rounded-lg hover:bg-system-fill font-medium">Support</a>
+        <div class="pt-4 border-t mt-3 space-y-2" style="border-color: var(--border);">
+          <a href="cart.html" class="block px-3 py-3 rounded-lg font-medium">Cart <span data-cart-count class="hidden" style="background-color: var(--accent); color: #000;">0</span></a>
+          <a href="login.html" class="block px-3 py-3 rounded-lg text-center border font-medium" style="border-color: var(--border);">Log in</a>
+          <a href="register.html" class="block px-3 py-3 rounded-lg text-center btn btn-primary">Create account</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero — the one bold moment: domain search bar is the visual anchor -->
+    <section class="hero-section">
+      <div class="hero-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-28">
+        <div class="max-w-2xl mx-auto text-center">
+          <h1 class="hero-headline">Search<br><span class="accent">domains.</span></h1>
+          <p class="hero-subtitle mt-5">Transparent pricing across 150+ extensions. No hidden fees. Register, transfer and manage domains with confidence.</p>
+
+          <form data-domain-search-form data-target="search-results.html" class="hero-search mt-10">
+            <div class="hero-search-form">
+              <label for="hero-search" class="sr-only">Domain name</label>
+              <input id="hero-search" type="search" placeholder="Search domains…" class="hero-search-input" required />
+              <button type="submit" class="hero-search-btn">Search domains</button>
+            </div>
+          </form>
+
+          <div class="hero-tlds mt-6">
+            <a href="search-results.html?domain=example.com" class="hero-tld-chip">.com</a>
+            <a href="search-results.html?domain=example.ng" class="hero-tld-chip">.ng</a>
+            <a href="search-results.html?domain=example.co.za" class="hero-tld-chip">.co.za</a>
+            <a href="search-results.html?domain=example.africa" class="hero-tld-chip">.africa</a>
+            <a href="search-results.html?domain=example.io" class="hero-tld-chip">.io</a>
+            <a href="search-results.html?domain=example.tech" class="hero-tld-chip">.tech</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats — numbers as typographic moments -->
+    <section class="stats-section">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value">150<span class="accent">+</span></div>
+            <div class="stat-label">Extensions available</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">$<span class="accent">1</span>.99</div>
+            <div class="stat-label">Pricing from</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">99.9<span class="accent">%</span></div>
+            <div class="stat-label">Uptime guarantee</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">24<span class="accent">/7</span></div>
+            <div class="stat-label">Support coverage</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Popular extensions — quiet, disciplined, hairline borders -->
+    <section class="py-16 lg:py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-end justify-between gap-4 mb-8">
+          <h2 class="section-heading">Popular extensions</h2>
+          <a href="pricing.html" class="text-sm font-semibold transition-colors" style="color: var(--accent);">View all pricing →</a>
+        </div>
+        <div class="tld-list border rounded-xl" style="border-color: var(--border);">
+          <div class="tld-row">
+            <span class="tld-name">.com</span>
+            <span class="tld-price">Registration <strong>$12.99/yr</strong> · Renewal $14.99/yr</span>
+            <a href="search-results.html?domain=example.com" class="tld-link">Check availability →</a>
+          </div>
+          <div class="tld-row">
+            <span class="tld-name">.ng</span>
+            <span class="tld-price">Registration <strong>$9.50/yr</strong> · Renewal $11.50/yr</span>
+            <a href="search-results.html?domain=example.ng" class="tld-link">Check availability →</a>
+          </div>
+          <div class="tld-row">
+            <span class="tld-name">.co.za</span>
+            <span class="tld-price">Registration <strong>$7.99/yr</strong> · Renewal $9.99/yr</span>
+            <a href="search-results.html?domain=example.co.za" class="tld-link">Check availability →</a>
+          </div>
+          <div class="tld-row">
+            <span class="tld-name">.africa</span>
+            <span class="tld-price">Registration <strong>$8.99/yr</strong> · Renewal $19.99/yr</span>
+            <a href="search-results.html?domain=example.africa" class="tld-link">Check availability →</a>
+          </div>
+          <div class="tld-row">
+            <span class="tld-name">.io</span>
+            <span class="tld-price">Registration <strong>$39.99/yr</strong> · Renewal $49.99/yr</span>
+            <a href="search-results.html?domain=example.io" class="tld-link">Check availability →</a>
+          </div>
+          <div class="tld-row">
+            <span class="tld-name">.tech</span>
+            <span class="tld-price">Registration <strong>$6.99/yr</strong> · Renewal $49.99/yr</span>
+            <a href="search-results.html?domain=example.tech" class="tld-link">Check availability →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why choose us — minimal, no cards -->
+    <section class="py-16 lg:py-20" style="background-color: var(--bg-elevated);">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="section-heading mb-12">Built for reliability</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">✓</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">Transparent pricing</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">Registration and renewal prices shown together. No hidden fees.</p>
+          </div>
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">⚡</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">Easy management</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">DNS, nameservers, auto-renew and contacts in one clean dashboard.</p>
+          </div>
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">🔒</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">Secure registration</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">Privacy protection and registrar-lock ready. Future-proof infrastructure.</p>
+          </div>
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">🌐</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">African support</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">Built for .ng, .co.za, .africa and global extensions alike.</p>
+          </div>
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">🔄</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">DNS management</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">Add A, CNAME, MX, TXT records without needing another provider.</p>
+          </div>
+          <div class="p-6" style="border: 1px solid var(--border); border-radius: 0.75rem;">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style="background-color: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent);">🧭</div>
+            <h3 class="font-semibold mt-4 text-primary" style="font-family: 'Syne', sans-serif;">Fast search & checkout</h3>
+            <p class="text-sm mt-2" style="color: var(--text-secondary);">Find, add to cart and checkout in under a minute.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="py-16 lg:py-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="section-heading mb-12">How it works</h2>
+        <div class="steps-grid">
+          <div class="step-item">
+            <div class="step-number">01</div>
+            <div class="step-title">Search</div>
+            <p class="step-desc">Enter your desired name and extension.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">02</div>
+            <div class="step-title">Choose</div>
+            <p class="step-desc">Pick from available options and choose your term.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">03</div>
+            <div class="step-title">Pay</div>
+            <p class="step-desc">Checkout with transparent pricing.</p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">04</div>
+            <div class="step-title">Manage</div>
+            <p class="step-desc">Manage DNS, renewals and contacts in your dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="py-16 lg:py-20" style="background-color: var(--bg-elevated); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div>
+            <h2 class="section-heading">Ready to claim your name?</h2>
+            <p class="mt-2 text-sm" style="color: var(--text-secondary);">Search again — it takes seconds.</p>
+          </div>
+          <form data-domain-search-form class="flex gap-2 w-full lg:w-auto search-transition">
+            <input type="search" placeholder="yourdomain.com" class="px-4 py-3 rounded-lg text-sm" style="background-color: var(--bg); color: var(--text-primary); border: 1px solid var(--border); min-height: 52px;" required />
+            <button type="submit" class="px-6 py-3 rounded-lg font-semibold text-sm whitespace-nowrap" style="background-color: var(--accent); color: #000; min-height: 52px;">Search</button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer--dark" style="background-color: var(--bg); border-top: 1px solid var(--border);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 py-10 text-sm">
+        <div>
+          <div class="footer-logo">DomainPlatform</div>
+          <p class="mt-3 text-sm" style="color: var(--text-secondary);">White-label domain reseller — transparent pricing, fast search, secure management. Future-ready infrastructure.</p>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-3 text-primary" style="font-family: 'Syne', sans-serif;">Domains</h4>
+          <ul class="space-y-1">
+            <li><a href="domains.html" class="footer-link">Browse domains</a></li>
+            <li><a href="pricing.html" class="footer-link">Pricing</a></li>
+            <li><a href="transfer-domain.html" class="footer-link">Transfer</a></li>
+            <li><a href="whois.html" class="footer-link">WHOIS</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-3 text-primary" style="font-family: 'Syne', sans-serif;">Support</h4>
+          <ul class="space-y-1">
+            <li><a href="support.html" class="footer-link">Help center</a></li>
+            <li><a href="faq.html" class="footer-link">FAQ</a></li>
+            <li><a href="contact.html" class="footer-link">Contact</a></li>
+            <li><a href="client-dashboard.html" class="footer-link">Client area</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-semibold mb-3 text-primary" style="font-family: 'Syne', sans-serif;">Company & Legal</h4>
+          <ul class="space-y-1">
+            <li><a href="about.html" class="footer-link">About</a></li>
+            <li><a href="legal/terms.html" class="footer-link">Terms</a></li>
+            <li><a href="legal/privacy.html" class="footer-link">Privacy</a></li>
+            <li><a href="legal/refund-policy.html" class="footer-link">Refund policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-6 border-t flex flex-col sm:flex-row justify-between gap-3 text-xs" style="border-color: var(--border); color: var(--text-secondary);">
+        <span>© 2026 DomainPlatform. All rights reserved. — Frontend prototype, no real transactions.</span>
+        <span>Brand colors configurable via CSS variables.</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 w-80 pointer-events-none"></div>
+  <script src="js/mock-data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/domain-search.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
