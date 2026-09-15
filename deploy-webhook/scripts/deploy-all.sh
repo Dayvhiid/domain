@@ -22,7 +22,8 @@ npm ci
 npm run build
 
 log "Deploying frontend to public_html..."
-rsync -avz --delete "$FRONTEND_BUILD/" "$FRONTEND_DEPLOY/"
+rm -rf "$FRONTEND_DEPLOY"/*
+cp -r "$FRONTEND_BUILD"/* "$FRONTEND_DEPLOY/"
 
 log "Installing backend dependencies..."
 cd "$BACKEND_DIR"
