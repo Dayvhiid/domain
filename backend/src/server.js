@@ -1,3 +1,4 @@
+import 'dotenv/config';
 /**
  * Domain Reseller Backend - Entry Point
  * (Environment variables already loaded by bootstrap.js)
