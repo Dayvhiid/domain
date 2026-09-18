@@ -3,7 +3,12 @@ import passport from 'passport';
 
 const router = express.Router();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3001';
+function getBaseUrl(req) {
+  if (process.env.FRONTEND_URL) return process.env.FRONTEND_URL;
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('x-forwarded-host') || req.get('host');
+  return `${proto}://${host}`;
+}
 
 // ─── Google OAuth ──────────────────────────────────────
 
@@ -18,19 +23,19 @@ router.get('/google', (req, res, next) => {
 // Step 2: Google redirects back here with the auth code
 router.get('/google/callback',
   passport.authenticate('google', {
-    failureRedirect: `${FRONTEND_URL}/login.html?error=oauth_failed`,
+    failureRedirect: '/login.html?error=oauth_failed',
     failureMessage: true,
   }),
   (req, res) => {
-    // Passport deserialized the user and session is set
-    // Redirect to frontend — the JS will call GET /auth/me
-    res.redirect(`${FRONTEND_URL}/index.html?oauth=success`);
+    const baseUrl = getBaseUrl(req);
+    res.redirect(`${baseUrl}/index.html?oauth=success`);
   }
 );
 
 // ─── Apple OAuth (placeholder) ─────────────────────────
 router.get('/apple', (req, res) => {
-  res.redirect(`${FRONTEND_URL}/login.html?error=apple_not_configured`);
+  const baseUrl = getBaseUrl(req);
+  res.redirect(`${baseUrl}/login.html?error=apple_not_configured`);
 });
 
 export default router;
