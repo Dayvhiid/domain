@@ -69,10 +69,7 @@ const updateOptionsSchema = z.object({
 
 const couponSchema = z.object({
   body: z.object({
-    code: z.string().min(1),
-    discountType: z.enum(['percentage', 'fixed']),
-    discountValue: z.number().positive(),
-    expiresAt: z.date().optional(),
+    code: z.string().min(1).max(50),
   }),
 });
 

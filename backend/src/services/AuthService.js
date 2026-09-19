@@ -2,9 +2,9 @@ import { User } from '../models/User.js';
 
 class AuthService {
   /**
-   * Register a new user
+   * Register a new user (auto-login after registration)
    */
-  async register(userData) {
+  async register(userData, req) {
     const { email, password, firstName, lastName } = userData;
     
     const existingUser = await User.findByEmail(email);
@@ -19,6 +19,11 @@ class AuthService {
       lastName: lastName.trim(),
       role: 'user',
     });
+    
+    // Auto-login: create session
+    if (req) {
+      req.session.userId = user._id;
+    }
     
     return this.sanitizeUser(user);
   }

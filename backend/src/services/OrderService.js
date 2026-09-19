@@ -1,8 +1,10 @@
 import { Order } from '../models/Order.js';
 import { Cart } from '../models/Cart.js';
+import { Invoice } from '../models/Invoice.js';
 import { cartService } from './CartService.js';
 import { domainsClient } from './DomainsClient.js';
 import { Domain } from '../models/Domain.js';
+import { v4 as uuidv4 } from 'uuid';
 
 class OrderService {
   /**
@@ -75,7 +77,7 @@ class OrderService {
   }
   
   /**
-   * Mark order as paid
+   * Mark order as paid and create invoice
    */
   async markOrderPaid(orderId, paymentData) {
     const order = await Order.findById(orderId);
@@ -86,7 +88,43 @@ class OrderService {
     }
     
     await order.markPaid(paymentData);
-    return order;
+    
+    // Create invoice from order
+    const date = new Date();
+    const year = date.getFullYear().toString().slice(-2);
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const unique = uuidv4().split('-')[0].toUpperCase();
+    const invoiceNumber = `INV${year}${month}-${unique}`;
+    
+    const invoiceItems = order.items.map(item => ({
+      description: `${item.fullDomainName} — ${item.operation} (${item.years}yr)`,
+      domainName: item.domainName,
+      extension: item.extension,
+      quantity: 1,
+      unitPrice: item.price.registration,
+      totalPrice: item.price.registration * item.years,
+      period: item.years,
+      operation: item.operation,
+    }));
+    
+    const invoice = await Invoice.create({
+      userId: order.userId,
+      orderId: order._id,
+      invoiceNumber,
+      items: invoiceItems,
+      subtotal: order.subtotal,
+      tax: order.tax,
+      total: order.total,
+      currency: order.currency,
+      status: 'paid',
+      issueDate: new Date(),
+      dueDate: new Date(),
+      paidAt: new Date(),
+      paymentProvider: order.paymentProvider,
+      paymentReference: paymentData.reference || paymentData.id,
+    });
+    
+    return { order, invoice };
   }
   
   /**

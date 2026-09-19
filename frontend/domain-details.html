@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Domain details — DomainPlatform</title>
+  <title>Domain details — 3StarsWebHosting</title>
   <meta name="description" content="Manage your domain settings, DNS, nameservers and security." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/output.css">
@@ -364,7 +364,7 @@
     <div class="site-header-inner">
       <a href="index.html" class="site-logo">
         <span class="site-logo-icon">◈</span>
-        <span>DomainPlatform</span>
+        <span>3StarsWebHosting</span>
       </a>
       <a href="client-dashboard.html" class="back-btn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -378,10 +378,10 @@
       <!-- Domain hero -->
       <div class="domain-hero">
         <div>
-          <h1 class="domain-hero-name">mybusiness.com</h1>
+          <h1 class="domain-hero-name" id="domain-hero-name">Loading...</h1>
           <div class="domain-hero-meta">
-            <span class="domain-badge badge-active">Active</span>
-            <span class="domain-dates">Registered 2023-08-12 · Expires 2027-08-12</span>
+            <span class="domain-badge badge-active" id="domain-hero-status">—</span>
+            <span class="domain-dates" id="domain-hero-dates">Loading...</span>
           </div>
         </div>
         <div class="auto-renew-toggle">
@@ -412,7 +412,7 @@
               <div class="kv-grid">
                 <div>
                   <div class="kv-label">Registrar</div>
-                  <div class="kv-value">DomainPlatform (reseller)</div>
+                  <div class="kv-value">3StarsWebHosting (reseller)</div>
                 </div>
                 <div>
                   <div class="kv-label">Status</div>
@@ -578,14 +578,14 @@
         <div class="card">
           <div class="card-header"><h2 class="card-title">Renewal</h2></div>
           <div class="card-body">
-            <p style="font-size:.875rem;color:#a1a1aa;margin-bottom:1rem;">Renewal price: <strong style="color:#ffffff;">$14.99/yr</strong>. Auto-renew is currently enabled.</p>
+            <p style="font-size:.875rem;color:#a1a1aa;margin-bottom:1rem;">Renewal price: <strong style="color:#ffffff;">R14.99/yr</strong>. Auto-renew is currently enabled.</p>
             <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
               <div style="flex:1;min-width:200px;">
                 <label class="form-label">Term</label>
                 <select class="form-input">
-                  <option>1 year — $14.99</option>
-                  <option>2 years — $29.98</option>
-                  <option>5 years — $74.95</option>
+                  <option>1 year — R14.99</option>
+                  <option>2 years — R29.98</option>
+                  <option>5 years — R74.95</option>
                 </select>
               </div>
               <button onclick="toast('Renewed (mock) — no charge','success')" class="btn btn-primary">Renew now (mock)</button>
@@ -611,7 +611,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+  <footer class="site-footer">&copy; 2026 3StarsWebHosting. All rights reserved.</footer>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
   <script src="js/mock-data.js"></script>
@@ -621,21 +621,267 @@
   <script src="js/ui.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module">
-    async function checkAuth() {
-      try {
-        const result = await API.authApi.getMe();
-        if (!result?.user) {
-          window.toast('Please log in to access this page.', 'default');
-          setTimeout(() => location.href = 'login.html', 300);
-          return;
-        }
-        window.APP_USER = result.user;
-      } catch {
-        window.toast('Please log in to access this page.', 'default');
+    function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtPrice(n) { return `R${Number(n||0).toFixed(2)}`; }
+
+    async function initDomainDetails() {
+      // Auth check
+      let user = window.APP_USER;
+      if (!user) {
+        try {
+          const result = await API.authApi.getMe();
+          if (result?.user) { user = result.user; window.APP_USER = user; localStorage.setItem('dp_user', JSON.stringify(user)); }
+        } catch {}
+      }
+      if (!user) {
+        window.toast('Please log in.', 'default');
         setTimeout(() => location.href = 'login.html', 300);
+        return;
+      }
+
+      // Read domain ID from URL
+      const params = new URLSearchParams(location.search);
+      const domainId = params.get('id');
+      if (!domainId) {
+        window.toast('No domain specified.', 'error');
+        setTimeout(() => location.href = 'client-dashboard.html', 1000);
+        return;
+      }
+
+      // Update page title
+      document.getElementById('domain-hero-name').textContent = 'Loading...';
+
+      try {
+        const domain = await API.domainsApi.getDomain(domainId, true);
+        if (!domain) throw new Error('Domain not found');
+
+        // Hero
+        document.getElementById('domain-hero-name').textContent = domain.fullDomainName || domain.domainName;
+        const statusTag = document.getElementById('domain-hero-status');
+        statusTag.textContent = domain.status;
+        statusTag.className = `kv-tag ${domain.status === 'active' ? '' : 'kv-tag--warning'}`;
+        document.getElementById('domain-hero-dates').textContent =
+          `Created ${domain.registrationDate ? new Date(domain.registrationDate).toISOString().split('T')[0] : '—'} · Expires ${domain.expirationDate ? new Date(domain.expirationDate).toISOString().split('T')[0] : '—'}`;
+        document.title = `${domain.fullDomainName} — 3StarsWebHosting`;
+
+        // Overview tab
+        const overviewKv = document.querySelector('[data-tab-panel="overview"] .kv-grid');
+        if (overviewKv) {
+          const daysLeft = domain.expirationDate ? Math.ceil((new Date(domain.expirationDate) - Date.now()) / (1000*60*60*24)) : null;
+          overviewKv.innerHTML = `
+            <div><div class="kv-label">Registrar</div><div class="kv-value">3StarsWebHosting (reseller)</div></div>
+            <div><div class="kv-label">Status</div><div class="kv-value"><span class="kv-tag">${escapeHtml(domain.status)}</span></div></div>
+            <div><div class="kv-label">Auto-renew</div><div class="kv-value" style="color:${domain.autoRenew ? '#4ade80' : '#f87171'};">${domain.autoRenew ? 'Enabled' : 'Disabled'}</div></div>
+            <div><div class="kv-label">Privacy</div><div class="kv-value">${domain.whoisPrivacy ? 'Enabled — WHOIS redacted' : 'Disabled'}</div></div>
+            <div><div class="kv-label">Created</div><div class="kv-value">${domain.registrationDate ? new Date(domain.registrationDate).toISOString().split('T')[0] : '—'}</div></div>
+            <div><div class="kv-label">Expires</div><div class="kv-value">${domain.expirationDate ? new Date(domain.expirationDate).toISOString().split('T')[0] : '—'}${daysLeft !== null ? ' (' + daysLeft + ' days)' : ''}</div></div>
+          `;
+        }
+
+        // Autorenew toggle
+        const arToggle = document.querySelector('[data-tab-panel="overview"] input[data-toggle]');
+        if (arToggle) {
+          arToggle.checked = !!domain.autoRenew;
+          arToggle.addEventListener('change', async () => {
+            try {
+              await API.domainsApi.toggleAutorenew(domainId, arToggle.checked);
+              window.toast(`Auto-renew ${arToggle.checked ? 'enabled' : 'disabled'}`, 'success');
+            } catch (err) {
+              arToggle.checked = !arToggle.checked;
+              window.toast(err.message || 'Failed to update', 'error');
+            }
+          });
+        }
+
+        // Registrar lock toggle
+        const securityToggles = document.querySelectorAll('[data-tab-panel="overview"] .setting-row .toggle input[data-toggle]');
+        const lockToggle = securityToggles[0];
+        const privacyToggle = securityToggles[1];
+
+        if (lockToggle) {
+          try {
+            const lockStatus = await API.domainsApi.getLockStatus(domainId);
+            lockToggle.checked = lockStatus?.locked ?? true;
+          } catch { lockToggle.checked = true; }
+
+          lockToggle.addEventListener('change', async () => {
+            try {
+              if (lockToggle.checked) {
+                await API.domainsApi.lockDomain(domainId);
+                window.toast('Registrar lock enabled', 'success');
+              } else {
+                await API.domainsApi.unlockDomain(domainId);
+                window.toast('Registrar lock disabled — domain can be transferred', 'success');
+              }
+            } catch (err) {
+              lockToggle.checked = !lockToggle.checked;
+              window.toast(err.message || 'Failed to update lock', 'error');
+            }
+          });
+        }
+
+        // WHOIS privacy toggle
+        if (privacyToggle) {
+          privacyToggle.checked = !!domain.whoisPrivacy;
+          privacyToggle.addEventListener('change', async () => {
+            try {
+              await API.domainsApi.toggleWhoisPrivacy(domainId, privacyToggle.checked);
+              window.toast(`WHOIS privacy ${privacyToggle.checked ? 'enabled' : 'disabled'}`, 'success');
+            } catch (err) {
+              privacyToggle.checked = !privacyToggle.checked;
+              window.toast(err.message || 'Failed to update privacy', 'error');
+            }
+          });
+        }
+
+        // DNS tab — load real records from backend
+        const dnsContainer = document.querySelector('[data-tab-panel="dns"] .dns-table');
+        const sld = domain.domainName;
+        const tld = (domain.extension || '').replace('.', '');
+
+        async function loadDnsRecords() {
+          if (!dnsContainer) return;
+          try {
+            const zone = await API.dnsApi.getZone(sld, tld);
+            const records = zone?.data?.arrRecords || zone?.arrRecords || zone?.data?.records || zone?.records || [];
+            if (records.length > 0) {
+              dnsContainer.innerHTML = `<div class="dns-row dns-row-header"><div>Type</div><div>Host</div><div>Value</div><div>TTL</div><div></div></div>` +
+                records.map(r => `
+                  <div class="dns-row">
+                    <div class="dns-type">${escapeHtml(r.type || r.strType || '')}</div>
+                    <div class="dns-host">${escapeHtml(r.name || r.host || '@')}</div>
+                    <div class="dns-value">${escapeHtml(r.content || r.value || r.strValue || '')}</div>
+                    <div class="dns-ttl">${r.ttl || 3600}</div>
+                    <div class="dns-actions">
+                      <button class="dns-action dns-action--edit" data-dns-edit='${JSON.stringify({id:r.id||r.dnsId,type:r.type||r.strType,name:r.name||r.host,content:r.content||r.value||r.strValue,ttl:r.ttl||3600})}'>Edit</button>
+                      <button class="dns-action dns-action--delete" data-dns-delete="${r.id||r.dnsId}">Delete</button>
+                    </div>
+                  </div>
+                `).join('');
+              // Wire delete buttons
+              dnsContainer.querySelectorAll('[data-dns-delete]').forEach(btn => {
+                btn.onclick = async () => {
+                  if (!confirm('Delete this DNS record?')) return;
+                  try {
+                    await API.dnsApi.deleteEntry(sld, tld, btn.dataset.dnsDelete);
+                    window.toast('Record deleted', 'success');
+                    loadDnsRecords();
+                  } catch (err) { window.toast(err.message || 'Delete failed', 'error'); }
+                };
+              });
+              // Wire edit buttons (open prompt for now)
+              dnsContainer.querySelectorAll('[data-dns-edit]').forEach(btn => {
+                btn.onclick = () => {
+                  const r = JSON.parse(btn.dataset.dnsEdit);
+                  const newContent = prompt('Enter new value:', r.content);
+                  if (newContent && newContent !== r.content) {
+                    API.dnsApi.updateEntry(sld, tld, r.id, { ...r, content: newContent })
+                      .then(() => { window.toast('Record updated', 'success'); loadDnsRecords(); })
+                      .catch(err => window.toast(err.message || 'Update failed', 'error'));
+                  }
+                };
+              });
+            } else {
+              dnsContainer.innerHTML = `<div class="dns-row"><div style="color:#52525b;padding:1rem;text-align:center;">No DNS records found for this domain.</div></div>`;
+            }
+          } catch (err) {
+            dnsContainer.innerHTML = `<div class="dns-row"><div style="color:#f87171;padding:1rem;text-align:center;">Failed to load DNS records: ${escapeHtml(err.message)}</div></div>`;
+          }
+        }
+
+        loadDnsRecords();
+
+        // Wire "Add record" button
+        const addRecordBtn = document.querySelector('[data-tab-panel="dns"] .btn-primary');
+        if (addRecordBtn) {
+          addRecordBtn.onclick = () => {
+            const type = prompt('Record type (A, CNAME, MX, TXT, NS):', 'A');
+            if (!type) return;
+            const name = prompt('Host name (@ for root):', '@');
+            if (name === null) return;
+            const content = prompt('Value/IP:', '');
+            if (!content) return;
+            const ttl = prompt('TTL (seconds):', '3600');
+            API.dnsApi.addEntry(sld, tld, { type: type.toUpperCase(), name, content, ttl: parseInt(ttl) || 3600 })
+              .then(() => { window.toast('Record added', 'success'); loadDnsRecords(); })
+              .catch(err => window.toast(err.message || 'Add failed', 'error'));
+          };
+        }
+
+        // Nameservers tab
+        const nsInputs = document.querySelectorAll('[data-tab-panel="ns"] .ns-inputs input');
+        if (nsInputs.length >= 2 && domain.nameservers?.length >= 2) {
+          nsInputs[0].value = domain.nameservers[0]?.hostname || '';
+          nsInputs[1].value = domain.nameservers[1]?.hostname || '';
+        }
+
+        // Nameserver save button
+        const nsSaveBtn = document.querySelector('[data-tab-panel="ns"] .btn-primary');
+        if (nsSaveBtn) {
+          nsSaveBtn.onclick = async () => {
+            const inputs = document.querySelectorAll('[data-tab-panel="ns"] .ns-inputs input');
+            const ns = [inputs[0]?.value, inputs[1]?.value].filter(Boolean);
+            if (ns.length < 2) { window.toast('Enter at least 2 nameservers', 'error'); return; }
+            try {
+              await API.domainsApi.updateDomain(domainId, {
+                nameservers: ns.map(h => ({ hostname: h }))
+              });
+              window.toast('Nameservers updated', 'success');
+            } catch (err) {
+              window.toast(err.message || 'Failed to update nameservers', 'error');
+            }
+          };
+        }
+
+        // Renewal tab — show real price
+        const renewText = document.querySelector('[data-tab-panel="renew"] p');
+        if (renewText && domain.price?.renewal) {
+          renewText.innerHTML = `Renewal price: <strong style="color:#ffffff;">${fmtPrice(domain.price.renewal)}/yr</strong>. Auto-renew is currently ${domain.autoRenew ? 'enabled' : 'disabled'}.`;
+          const sel = document.querySelector('[data-tab-panel="renew"] select');
+          if (sel) {
+            const p = domain.price.renewal;
+            sel.innerHTML = `<option>1 year — ${fmtPrice(p)}</option><option>2 years — ${fmtPrice(p*2)}</option><option>5 years — ${fmtPrice(p*5)}</option>`;
+          }
+        }
+
+        // Renew button
+        const renewBtn = document.querySelector('[data-tab-panel="renew"] .btn-primary');
+        if (renewBtn) {
+          renewBtn.textContent = 'Renew now';
+          renewBtn.onclick = async () => {
+            try {
+              await API.domainsApi.renewDomain(domainId, 1);
+              window.toast('Domain renewed successfully', 'success');
+              setTimeout(() => location.reload(), 1000);
+            } catch (err) {
+              window.toast(err.message || 'Renewal failed', 'error');
+            }
+          };
+        }
+
+        // Transfer tab — get real EPP code
+        const eppBtn = document.querySelector('[data-tab-panel="transfer"] .btn-warning-outline');
+        if (eppBtn) {
+          eppBtn.onclick = async () => {
+            if (!confirm('Generate auth code?')) return;
+            try {
+              const result = await API.domainsApi.getAuthCode(domainId);
+              const code = result?.authCode || result?.strEPPKey || 'Unavailable';
+              window.toast(`Auth code: ${code}`, 'success', 10000);
+            } catch (err) {
+              window.toast(err.message || 'Failed to get auth code', 'error');
+            }
+          };
+        }
+
+      } catch (err) {
+        console.error('Failed to load domain:', err);
+        document.getElementById('domain-hero-name').textContent = 'Domain not found';
+        window.toast('Failed to load domain details', 'error');
       }
     }
-    checkAuth();
+
+    initDomainDetails();
   </script>
 </body>
 </html>

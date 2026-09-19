@@ -36,6 +36,11 @@ function initDomainSearch() {
   });
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 async function initSearchResults() {
   const container = document.getElementById("search-results-root");
   if (!container) return;
@@ -72,9 +77,11 @@ async function initSearchResults() {
     
     try {
       const data = await window.API.searchDomain(q);
+      resultsEl && (resultsEl.innerHTML = "");
       render(data);
     } catch (err) {
-      resultsEl.innerHTML = `<div style="background:#121214;border:1px solid rgba(239,68,68,0.2);border-radius:1rem;padding:1.5rem;color:#f87171;">${err.message || "Search failed."}</div>`;
+      resultsEl && (resultsEl.innerHTML = "");
+      resultsEl.innerHTML = `<div style="background:#121214;border:1px solid rgba(239,68,68,0.2);border-radius:1rem;padding:1.5rem;color:#f87171;">${escapeHtml(err.message || "Search failed.")}</div>`;
     } finally {
       loadingEl && (loadingEl.hidden = true);
     }
@@ -97,7 +104,7 @@ async function initSearchResults() {
     
     // Left: domain name + badges
     html += `<div style="min-width:0;">`;
-    html += `<h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;letter-spacing:-0.02em;word-break:break-all;">${primary.domain}</h1>`;
+    html += `<h1 style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:#f4f4f5;letter-spacing:-0.02em;word-break:break-all;">${escapeHtml(primary.domain)}</h1>`;
     html += `<div style="display:flex;align-items:center;gap:.5rem;margin-top:.625rem;flex-wrap:wrap;">`;
     
     if (isAvailable) {
@@ -147,7 +154,7 @@ async function initSearchResults() {
       // Taken: WHOIS + Make Offer buttons
       html += `<div style="display:flex;flex-wrap:wrap;gap:.75rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.06);">`;
       html += `<p style="flex-basis:100%;font-size:.875rem;color:#71717a;margin-bottom:.25rem;">This domain is already registered. You can look up ownership details or explore acquisition options.</p>`;
-      html += `<a href="whois.html?domain=${encodeURIComponent(primary.domain)}" style="display:inline-flex;align-items:center;gap:.375rem;padding:8px 16px;border-radius:.5rem;font-size:.8125rem;font-weight:500;color:#d4d4d8;border:1px solid #27272a;background:transparent;text-decoration:none;transition:all .15s;">`;
+      html += `<a href="whois.html?domain=${encodeURIComponent(escapeHtml(primary.domain))}" style="display:inline-flex;align-items:center;gap:.375rem;padding:8px 16px;border-radius:.5rem;font-size:.8125rem;font-weight:500;color:#d4d4d8;border:1px solid #27272a;background:transparent;text-decoration:none;transition:all .15s;">`;
       html += `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`;
       html += `WHOIS Details</a>`;
       html += `<button onclick="window.toast('Backorder coming soon!','default')" style="display:inline-flex;align-items:center;gap:.375rem;padding:8px 16px;border-radius:.5rem;font-size:.8125rem;font-weight:600;color:#000;background:transparent;border:1px solid rgba(6,182,212,0.4);cursor:pointer;font-family:inherit;transition:all .15s;">`;
@@ -164,14 +171,14 @@ async function initSearchResults() {
       html += `<div style="background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:1rem;overflow:hidden;">`;
       
       data.alternatives.forEach((alt, i) => {
-        const altAvailable = alt.status === "available";
+        const altAvailable = alt.status === "available" || alt.status === "priced";
         const borderStyle = i > 0 ? "border-top:1px solid rgba(255,255,255,0.04);" : "";
         
         html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;gap:1rem;${borderStyle}">`;
         
         // Left: domain name
         html += `<div style="min-width:0;flex:1;">`;
-        html += `<div style="font-weight:500;color:#f4f4f5;font-size:.9375rem;word-break:break-all;">${alt.domain}</div>`;
+        html += `<div style="font-weight:500;color:#f4f4f5;font-size:.9375rem;word-break:break-all;">${escapeHtml(alt.domain)}</div>`;
         html += `<div style="font-size:.75rem;color:#52525b;margin-top:.125rem;">`;
         if (altAvailable && alt.registration > 0) {
           html += `<span style="color:#4ade80;">Available</span> · ${fmt(alt.registration)}/yr`;
@@ -206,7 +213,7 @@ async function initSearchResults() {
       
       data.suggestions.forEach(s => {
         html += `<div class="sug-grid" style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:#121214;border:1px solid rgba(255,255,255,0.06);border-radius:.75rem;gap:.75rem;">`;
-        html += `<span style="font-weight:500;color:#f4f4f5;font-size:.875rem;word-break:break-all;">${s.domain}</span>`;
+        html += `<span style="font-weight:500;color:#f4f4f5;font-size:.875rem;word-break:break-all;">${escapeHtml(s.domain)}</span>`;
         html += `<button data-alt-add="${s.domain}" data-price="${s.registration}" data-renew="${s.renewal}" style="display:inline-flex;align-items:center;padding:5px 12px;border-radius:.375rem;font-size:.75rem;font-weight:600;color:#000;background:#22d3ee;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;">Add</button>`;
         html += `</div>`;
       });
@@ -231,7 +238,9 @@ async function initSearchResults() {
           years 
         });
         
-        if (!res.added) {
+        if (!res.added && res.reason === "cart_full") {
+          window.toast("Cart is full (max 50 items).", "error");
+        } else if (!res.added) {
           window.toast("Already in cart.", "error");
         } else {
           window.toast(`${primary.domain} added to cart (${years} yr).`, "success");
@@ -245,10 +254,15 @@ async function initSearchResults() {
         const domain = btn.getAttribute("data-alt-add");
         const price = Number(btn.getAttribute("data-price"));
         const renew = Number(btn.getAttribute("data-renew"));
+        // Extract TLD from full domain (e.g. "example.co.za" → ".co.za")
+        const dotIdx = domain.indexOf(".");
+        const tld = dotIdx !== -1 ? domain.slice(dotIdx) : "";
         
-        const res = Cart.add({ domain, registration: price, renewal: renew, years: 1 });
+        const res = Cart.add({ domain, tld, registration: price, renewal: renew, years: 1 });
         
-        if (!res.added) {
+        if (!res.added && res.reason === "cart_full") {
+          window.toast("Cart is full (max 50 items).", "error");
+        } else if (!res.added) {
           window.toast("Already in cart.", "error");
         } else {
           window.toast(`${domain} added to cart.`, "success");

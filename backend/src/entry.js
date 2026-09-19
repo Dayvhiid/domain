@@ -13,7 +13,6 @@ console.log('Environment loaded:', {
   NODE_ENV: process.env.NODE_ENV,
   MONGODB_URI: process.env.MONGODB_URI ? 'SET' : 'MISSING',
   SESSION_SECRET: process.env.SESSION_SECRET ? 'SET' : 'MISSING',
-  OPENPROVIDER_USERNAME: process.env.OPENPROVIDER_USERNAME ? 'SET' : 'MISSING',
 });
 
 // Now dynamically import the server

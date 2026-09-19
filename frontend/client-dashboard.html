@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard — DomainPlatform</title>
+  <title>Dashboard — 3StarsWebHosting</title>
   <meta name="description" content="Manage your domains, renewals, billing and account settings." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/output.css">
@@ -344,7 +344,7 @@
     <div class="site-header-inner">
       <a href="index.html" class="site-logo">
         <span class="site-logo-icon">◈</span>
-        <span>DomainPlatform</span>
+        <span>3StarsWebHosting</span>
       </a>
       <nav class="dash-nav" aria-label="Dashboard">
         <a href="client-dashboard.html" class="dash-nav-link active">Overview</a>
@@ -498,7 +498,7 @@
               <div class="renewal-date">Due in 18 days</div>
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;">
-              <span class="renewal-price">$8.99</span>
+              <span class="renewal-price">R8.99</span>
               <span class="renewal-status status-pending">Pending</span>
             </div>
           </div>
@@ -508,7 +508,7 @@
               <div class="renewal-date">Due in 42 days</div>
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;">
-              <span class="renewal-price">$9.99</span>
+              <span class="renewal-price">R9.99</span>
               <span class="renewal-status status-pending">Pending</span>
             </div>
           </div>
@@ -518,7 +518,7 @@
               <div class="renewal-date">mybusiness.com (1yr)</div>
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;">
-              <span class="renewal-price">$12.99</span>
+              <span class="renewal-price">R12.99</span>
               <span class="renewal-status status-paid">Paid</span>
             </div>
           </div>
@@ -528,7 +528,7 @@
               <div class="renewal-date">shop-store.ng renewal</div>
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;">
-              <span class="renewal-price">$4.99</span>
+              <span class="renewal-price">R4.99</span>
               <span class="renewal-status status-paid">Paid</span>
             </div>
           </div>
@@ -584,7 +584,7 @@
     </div>
   </div>
 
-  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+  <footer class="site-footer">&copy; 2026 3StarsWebHosting. All rights reserved.</footer>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
   <script src="js/mock-data.js"></script>
@@ -594,11 +594,12 @@
   <script src="js/ui.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module">
+    function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtPrice(n) { return `R${Number(n||0).toFixed(2)}`; }
+
     async function initDashboard() {
-      // APP_USER is loaded synchronously from localStorage by main.js
       let user = window.APP_USER;
       
-      // If no cached user, try server validation
       if (!user) {
         try {
           const result = await API.authApi.getMe();
@@ -619,6 +620,65 @@
       document.getElementById('dash-avatar').textContent = (user.firstName?.[0] || 'U').toUpperCase();
       document.getElementById('dash-name').textContent = `${user.firstName} ${user.lastName}`;
       document.getElementById('dash-welcome').textContent = `Welcome back, ${user.firstName}`;
+      
+      // Load dashboard data from backend
+      try {
+        const data = await API.usersApi.getDashboard();
+        
+        // Update KPI cards
+        const kpiValues = document.querySelectorAll('.kpi-value');
+        if (kpiValues[0]) kpiValues[0].textContent = data.stats?.totalDomains ?? 0;
+        if (kpiValues[1]) kpiValues[1].textContent = data.stats?.expiringSoon ?? 0;
+        if (kpiValues[2]) kpiValues[2].textContent = `${data.stats?.autoRenewEnabled ?? 0} / ${data.stats?.totalDomains ?? 0}`;
+        
+        // Render expiring domains
+        const domainBody = document.querySelector('.card-body');
+        if (domainBody && data.expiringDomains?.length > 0) {
+          const existingRows = domainBody.querySelectorAll('.domain-row');
+          // Only replace if we have real data
+          if (data.expiringDomains.length > 0) {
+            domainBody.innerHTML = data.expiringDomains.map(d => {
+              const daysLeft = Math.ceil((new Date(d.expirationDate) - Date.now()) / (1000*60*60*24));
+              const expDate = new Date(d.expirationDate).toISOString().split('T')[0];
+              const isExpiring = daysLeft <= 30 && daysLeft > 0;
+              return `<div class="domain-row">
+                <div class="domain-info">
+                  <div class="domain-name">${escapeHtml(d.fullDomainName || d.domainName + '.' + (d.extension||'').replace('.',''))}</div>
+                  <div class="domain-meta ${isExpiring ? 'domain-meta--warning' : ''}">${isExpiring ? 'Expires in ' + daysLeft + ' days' : 'Expires ' + expDate} · Auto-renew ${d.autoRenew ? 'on' : 'off'}</div>
+                </div>
+                <div class="domain-actions">
+                  <span class="domain-badge ${isExpiring ? 'badge-expiring' : 'badge-active'}">${isExpiring ? 'Expiring' : 'Active'}</span>
+                </div>
+              </div>`;
+            }).join('');
+          }
+        }
+        
+        // Render recent orders in renewals section
+        if (data.recentOrders?.length > 0) {
+          const renewalCard = document.querySelectorAll('.card-body')[1];
+          if (renewalCard) {
+            renewalCard.innerHTML = data.recentOrders.map(o => {
+              const statusClass = o.status === 'paid' || o.status === 'completed' ? 'status-paid' : 'status-pending';
+              const itemNames = o.items?.map(i => i.fullDomainName).join(', ') || 'Order';
+              return `<div class="renewal-row">
+                <div>
+                  <div class="renewal-domain">${escapeHtml(o.orderNumber)}</div>
+                  <div class="renewal-date">${escapeHtml(itemNames)}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                  <span class="renewal-price">${fmtPrice(o.total)}</span>
+                  <span class="renewal-status ${statusClass}">${escapeHtml(o.status)}</span>
+                </div>
+              </div>`;
+            }).join('');
+          }
+        }
+        
+      } catch (err) {
+        console.error('Failed to load dashboard:', err);
+        // Dashboard shows static content as fallback
+      }
     }
     
     initDashboard();

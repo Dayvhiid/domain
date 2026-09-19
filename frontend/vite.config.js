@@ -2,14 +2,14 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   root: '.',
-  publicDir: false,
+  publicDir: 'assets',
   
   server: {
     port: 3001,
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3002',
+        target: 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {
@@ -28,7 +28,7 @@ export default defineConfig({
   },
   
   build: {
-    outDir: '../domain-reseller-backend/public',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {

@@ -63,6 +63,11 @@ export async function connectDB() {
     isConnected = false;
   });
 
+  mongoose.connection.on('reconnected', () => {
+    console.log('MongoDB reconnected');
+    isConnected = true;
+  });
+
   process.on('SIGINT', async () => {
     await mongoose.connection.close();
     if (memoryServer) {

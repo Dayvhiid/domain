@@ -1,6 +1,6 @@
-# Domain Reseller Backend
+# 3StarsWebHosting Backend
 
-Backend API for the Domain Reseller Platform with OpenProvider integration.
+Backend API for the 3StarsWebHosting domain reseller platform with OpenProvider integration.
 
 ## Features
 
@@ -138,11 +138,11 @@ API_BASE_URL=http://localhost:3000
 FRONTEND_URL=http://localhost:3001
 
 # MongoDB
-MONGODB_URI=mongodb://localhost:27017/domain-reseller
+MONGODB_URI=mongodb://localhost:27017/3starswebhosting
 
 # Session
 SESSION_SECRET=your-32-char-secret
-SESSION_COOKIE_NAME=dr_session
+SESSION_COOKIE_NAME=3sh_session
 
 # OpenProvider
 OPENPROVIDER_USERNAME=your-username

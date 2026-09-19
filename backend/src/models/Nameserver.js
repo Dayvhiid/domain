@@ -17,7 +17,6 @@ const nameserverGroupSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    unique: true, // Per user
     index: true,
   },
   hosts: [hostSchema],

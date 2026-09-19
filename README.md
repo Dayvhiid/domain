@@ -1,11 +1,11 @@
-# Domain Platform
+# 3StarsWebHosting
 
-Monorepo containing both the frontend and backend for the Domain Reseller Platform.
+Monorepo containing both the frontend and backend for the 3StarsWebHosting domain reseller platform.
 
 ## Structure
 
 ```
-domain-platform/
+3starswebhosting/
 ├── frontend/          # Static HTML/Tailwind CSS (3starswebhosting.co.za)
 ├── backend/           # Express/Node.js API
 ├── deploy-webhook/    # Pull-based deployment receiver
@@ -58,8 +58,8 @@ This project uses **pull-based deployment**. GitHub pushes a webhook notificatio
 3. **Clone repos** on server:
    ```bash
    # Monorepo (contains both frontend and backend)
-   cd ~/domains/api.3starswebhosting.co.za
-   git clone git@github.com:Dayvhiid/domain-platform.git .
+   cd ~/domains
+    git clone git@github.com:Dayvhiid/3starswebhosting.git domain
    ```
 
 4. **Create deploy-webhook app** in DirectAdmin (Setup Node.js App):

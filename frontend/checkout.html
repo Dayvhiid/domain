@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Checkout — DomainPlatform</title>
+  <title>Checkout — 3StarsWebHosting</title>
   <meta name="description" content="Complete your domain registration order." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/output.css">
@@ -68,7 +68,7 @@
     <div class="header-inner">
       <a href="index.html" class="logo">
         <span class="logo-icon">◈</span>
-        <span>DomainPlatform</span>
+        <span>3StarsWebHosting</span>
       </a>
       <div class="ssl-badge">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -220,7 +220,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+  <footer class="site-footer">&copy; 2026 3StarsWebHosting. All rights reserved.</footer>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
   <script src="js/mock-data.js"></script>
@@ -231,6 +231,8 @@
   <script type="module" src="js/main.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
       // ─── Payment option cards ─────────────────────────
       const payOptions = document.querySelectorAll('.pay-option');
       function updatePayUI() {
@@ -271,7 +273,7 @@
         itemsEl.innerHTML = items.map(i => `
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:.8125rem;gap:.5rem;">
             <div style="min-width:0;flex:1;">
-              <div style="font-weight:500;color:#d4d4d8;word-break:break-all;">${i.domain}</div>
+              <div style="font-weight:500;color:#d4d4d8;word-break:break-all;">${escapeHtml(i.domain)}</div>
               <div style="font-size:.6875rem;color:#52525b;">${i.years}yr registration</div>
             </div>
             <div style="font-weight:600;color:#f4f4f5;font-variant-numeric:tabular-nums;white-space:nowrap;">${fmtPrice(i.registration * i.years)}</div>
@@ -284,7 +286,7 @@
       document.getElementById('co-total').textContent = fmtPrice(subtotal);
 
       // ─── Form submit ──────────────────────────────────
-      document.getElementById('checkout-form').addEventListener('submit', e => {
+      document.getElementById('checkout-form').addEventListener('submit', async e => {
         e.preventDefault();
         let valid = true;
         e.target.querySelectorAll('[required]').forEach(inp => {
@@ -301,19 +303,56 @@
         });
         if (!valid) { toast('Fix highlighted fields', 'error'); return; }
 
+        // Check if user is logged in
+        if (!window.APP_USER) {
+          toast('Please log in to complete checkout', 'error');
+          setTimeout(() => location.href = 'login.html', 1000);
+          return;
+        }
+
         const btn = document.getElementById('checkout-submit');
         btn.textContent = 'Processing...';
         btn.disabled = true;
         btn.style.opacity = '0.7';
 
-        setTimeout(() => {
+        try {
+          // Sync localStorage cart to backend cart
+          for (const item of items) {
+            const dotIdx = item.domain.indexOf(".");
+            const tld = dotIdx !== -1 ? item.domain.slice(dotIdx) : (item.tld || ".com");
+            const sld = dotIdx !== -1 ? item.domain.slice(0, dotIdx) : item.domain;
+
+            try {
+              await API.cartApi.addItem({
+                domainName: sld,
+                extension: tld.startsWith(".") ? tld : "." + tld,
+                price: { registration: item.registration, renewal: item.renewal, currency: "ZAR" },
+                years: item.years,
+                options: { whoisPrivacy: true, autoRenew: true },
+              });
+            } catch (err) {
+              // Skip if already in cart or other error
+            }
+          }
+
+          // Create order from backend cart
+          const selectedPay = document.querySelector('input[name="pay"]:checked')?.value || "manual";
+          const payMap = { card: "manual", bank: "manual", invoice: "manual" };
+          const result = await API.ordersApi.createOrder(payMap[selectedPay] || "manual");
+
           btn.textContent = 'Order placed ✓';
           btn.style.backgroundColor = '#4ade80';
           btn.style.boxShadow = '0 0 20px rgba(34,197,94,0.2)';
           document.getElementById('checkout-success').hidden = false;
-          toast('Order successful — cart will clear', 'success');
-          setTimeout(() => { localStorage.setItem('dr_cart_v1', '[]'); }, 800);
-        }, 1300);
+          toast(`Order ${result?.orderNumber || ''} placed successfully!`, 'success');
+          localStorage.removeItem('dr_cart_v1');
+          if (window.Cart) Cart.updateBadge();
+        } catch (err) {
+          btn.textContent = 'Complete checkout';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          toast(err.message || 'Checkout failed. Please try again.', 'error');
+        }
       });
 
       if (window.Cart) Cart.updateBadge();

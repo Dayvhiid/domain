@@ -8,7 +8,7 @@
 
 /*
  * Semantic colors (light/dark), custom components, focus states and motion
- * live in css/theme.css (shared by static pages and WordPress). Keep the two
+ * live in css/theme.css (shared by all pages). Keep the two
  * in sync — this file only supplies Tailwind directives + base typography.
  */
 

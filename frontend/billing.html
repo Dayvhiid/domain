@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Billing — DomainPlatform</title>
+  <title>Billing — 3StarsWebHosting</title>
   <meta name="description" content="Manage invoices, payment methods and billing history." />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/output.css">
@@ -271,7 +271,7 @@
     <div class="site-header-inner">
       <a href="index.html" class="site-logo">
         <span class="site-logo-icon">◈</span>
-        <span>DomainPlatform</span>
+        <span>3StarsWebHosting</span>
       </a>
       <a href="client-dashboard.html" class="back-btn">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -284,10 +284,10 @@
     <div class="billing-page">
       <!-- Hero -->
       <h1 class="billing-title">Billing & invoices</h1>
-      <p class="billing-sub">Mock billing — real invoices and payments served server-side.</p>
+      <p class="billing-sub">View your invoices and payment history.</p>
 
       <!-- Invoice table -->
-      <div class="card" style="margin-top:1.5rem;overflow:hidden;">
+      <div id="invoice-list" class="card" style="margin-top:1.5rem;overflow:hidden;display:none;">
         <div class="invoice-header">
           <div>Invoice</div>
           <div>Date</div>
@@ -296,15 +296,8 @@
           <div>Status</div>
           <div>Action</div>
         </div>
-        <div class="invoice-row">
-          <div class="invoice-id">INV-2026-042</div>
-          <div class="invoice-date">2026-08-10</div>
-          <div class="invoice-desc">mybusiness.com — 1 year</div>
-          <div class="invoice-amount">$12.99</div>
-          <div><span class="invoice-badge badge-paid">Paid</span></div>
-          <div class="invoice-actions">
-            <button onclick="toast('Download mock invoice','default')" class="inv-btn inv-btn-download">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <!-- Dynamic invoice rows loaded from backend -->
+      </div>
               PDF
             </button>
           </div>
@@ -384,7 +377,7 @@
         </div>
 
         <!-- Empty state -->
-        <div class="empty-state">
+        <div id="invoice-empty" class="empty-state" style="display:block;">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           </div>
@@ -400,7 +393,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">&copy; 2026 DomainPlatform. All rights reserved.</footer>
+  <footer class="site-footer">&copy; 2026 3StarsWebHosting. All rights reserved.</footer>
 
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 w-80 space-y-2 pointer-events-none"></div>
   <script src="js/mock-data.js"></script>
@@ -410,21 +403,66 @@
   <script src="js/ui.js"></script>
   <script type="module" src="js/main.js"></script>
   <script type="module">
-    async function checkAuth() {
+    function escapeHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function fmtPrice(n) { return `R${Number(n||0).toFixed(2)}`; }
+
+    async function initBilling() {
+      let user = window.APP_USER;
+      if (!user) {
+        try {
+          const result = await API.authApi.getMe();
+          if (result?.user) { user = result.user; window.APP_USER = user; localStorage.setItem('dp_user', JSON.stringify(user)); }
+        } catch {}
+      }
+      if (!user) {
+        window.toast('Please log in.', 'default');
+        setTimeout(() => location.href = 'login.html', 300);
+        return;
+      }
+
+      const listEl = document.getElementById('invoice-list');
+      const emptyEl = document.getElementById('invoice-empty');
+
       try {
-        const result = await API.authApi.getMe();
-        if (!result?.user) {
-          window.toast('Please log in to access this page.', 'default');
-          setTimeout(() => location.href = 'login.html', 300);
+        const result = await API.usersApi.listInvoices();
+        const invoices = result?.invoices || result || [];
+
+        if (invoices.length === 0) {
+          if (listEl) listEl.style.display = 'none';
+          if (emptyEl) emptyEl.style.display = 'block';
           return;
         }
-        window.APP_USER = result.user;
-      } catch {
-        window.toast('Please log in to access this page.', 'default');
-        setTimeout(() => location.href = 'login.html', 300);
+
+        if (emptyEl) emptyEl.style.display = 'none';
+        if (listEl) {
+          listEl.style.display = 'block';
+          listEl.innerHTML = invoices.map(inv => {
+            const statusClass = inv.status === 'paid' ? 'badge-paid' : inv.status === 'overdue' ? 'badge-overdue' : 'badge-due';
+            const statusLabel = inv.status.charAt(0).toUpperCase() + inv.status.slice(1);
+            const date = inv.issueDate ? new Date(inv.issueDate).toISOString().split('T')[0] : '—';
+            const desc = inv.items?.[0]?.description || 'Domain registration';
+            return `<div class="invoice-row">
+              <div class="invoice-id">${escapeHtml(inv.invoiceNumber)}</div>
+              <div class="invoice-date">${date}</div>
+              <div class="invoice-desc">${escapeHtml(desc)}</div>
+              <div class="invoice-amount">${fmtPrice(inv.total)}</div>
+              <div><span class="invoice-badge ${statusClass}">${statusLabel}</span></div>
+              <div class="invoice-actions">
+                ${inv.status !== 'paid' ? `<button class="inv-btn inv-btn-pay" onclick="toast('Payment integration coming soon','default')">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  Pay now
+                </button>` : `<span style="font-size:.75rem;color:#4ade80;">Paid</span>`}
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Failed to load invoices:', err);
+        // Show empty state as fallback
       }
     }
-    checkAuth();
+
+    initBilling();
   </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 // Mock API Abstraction Layer
-// TODAY: returns mock data. FUTURE: replace internals with fetch('/wp-json/domain-platform/v1/...')
+// TODAY: returns mock data. FUTURE: replace internals with fetch('/api/v1/...')
 // UI should never need to change.
 const MockAPI = (() => {
   const TLD_PRICING = [

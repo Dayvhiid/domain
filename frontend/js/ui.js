@@ -71,4 +71,4 @@ function initUI(){
   });
 }
 
-function formatPrice(n){ return `$${Number(n).toFixed(2)}`; }
+function formatPrice(n){ return `R${Number(n).toFixed(2)}`; }

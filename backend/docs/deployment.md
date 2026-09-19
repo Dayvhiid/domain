@@ -11,7 +11,7 @@
 
 ### 1. Clone and Configure
 ```bash
-cd domain-reseller-backend
+cd 3starswebhosting-backend
 cp .env.example .env
 # Edit .env with your values
 ```
@@ -60,7 +60,7 @@ npm install -g pm2
 # npm run build
 
 # Start with PM2
-pm2 start src/server.js --name domain-reseller-api
+pm2 start src/server.js --name 3starswebhosting-api
 
 # Save PM2 config
 pm2 save
@@ -71,7 +71,7 @@ pm2 startup
 ```javascript
 module.exports = {
   apps: [{
-    name: 'domain-reseller-api',
+    name: '3starswebhosting-api',
     script: 'src/server.js',
     instances: 'max',
     exec_mode: 'cluster',
@@ -84,8 +84,8 @@ module.exports = {
       PORT: 3000,
       SESSION_COOKIE_SECURE: 'true',
     },
-    error_file: '/var/log/domain-reseller/error.log',
-    out_file: '/var/log/domain-reseller/out.log',
+    error_file: '/var/log/3starswebhosting/error.log',
+    out_file: '/var/log/3starswebhosting/out.log',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     max_memory_restart: '1G',
     node_args: '--max-old-space-size=1024',
@@ -131,7 +131,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/domain-reseller
+      - MONGODB_URI=mongodb://mongo:27017/3starswebhosting
       - SESSION_COOKIE_SECURE=true
     depends_on:
       - mongo
@@ -149,16 +149,16 @@ volumes:
 
 ### Option 3: Systemd Service
 
-**/etc/systemd/system/domain-reseller-api.service:**
+**/etc/systemd/system/3starswebhosting-api.service:**
 ```ini
 [Unit]
-Description=Domain Reseller API
+Description=3StarsWebHosting API
 After=network.target mongod.service
 
 [Service]
 Type=simple
 User=nodejs
-WorkingDirectory=/opt/domain-reseller-backend
+WorkingDirectory=/opt/3starswebhosting-backend
 Environment=NODE_ENV=production
 Environment=PORT=3000
 ExecStart=/usr/bin/node src/server.js
@@ -166,7 +166,7 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=syslog
 StandardError=syslog
-SyslogIdentifier=domain-reseller-api
+SyslogIdentifier=3starswebhosting-api
 
 [Install]
 WantedBy=multi-user.target
@@ -174,8 +174,8 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable domain-reseller-api
-sudo systemctl start domain-reseller-api
+sudo systemctl enable 3starswebhosting-api
+sudo systemctl start 3starswebhosting-api
 ```
 
 ## Reverse Proxy (Nginx)
@@ -252,13 +252,13 @@ mongosh --eval 'rs.initiate({_id: "rs0", members: [{_id: 0, host: "localhost:270
 
 ### Connection String for Replica Set
 ```
-MONGODB_URI=mongodb://localhost:27017,localhost:27018,localhost:27019/domain-reseller?replicaSet=rs0
+MONGODB_URI=mongodb://localhost:27017,localhost:27018,localhost:27019/3starswebhosting?replicaSet=rs0
 ```
 
 ### Indexes
 Run once after deployment:
 ```bash
-mongosh domain-reseller --eval '
+mongosh 3starswebhosting --eval '
 db.users.createIndex({email: 1}, {unique: true})
 db.domains.createIndex({userId: 1, status: 1})
 db.domains.createIndex({userId: 1, expirationDate: 1})
@@ -284,14 +284,14 @@ curl https://api.yourdomain.com/health/db
 ### Logs
 ```bash
 # PM2 logs
-pm2 logs domain-reseller-api
+pm2 logs 3starswebhosting-api
 
 # Nginx logs
 tail -f /var/log/nginx/access.log
 tail -f /var/log/nginx/error.log
 
 # Application logs
-tail -f /var/log/domain-reseller/out.log
+tail -f /var/log/3starswebhosting/out.log
 ```
 
 ### Metrics (Prometheus)

@@ -5,13 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "shx rm -rf dist && shx mkdir -p dist/legal && shx cp *.html dist/ && shx cp -r css js dist/ && shx cp -r legal/*.html dist/legal/",
+    "build": "vite build",
     "preview": "vite preview",
     "build:css": "npx tailwindcss -i ./css/input.css -o ./css/output.css"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
-    "shx": "^0.3.4",
     "tailwindcss": "^4.3.3",
     "vite": "^5.4.0"
   }

@@ -20,8 +20,8 @@ router.use(requireAuth);
 
 router.post('/', validate(schemas.createOrder), createOrder);
 router.get('/', validate(schemas.listOrders), listOrders);
-router.get('/:id', getOrder);
 router.get('/number/:orderNumber', getOrderByNumber);
+router.get('/:id', getOrder);
 router.post('/:id/pay', validate(schemas.initiatePayment), initiatePayment);
 router.post('/:id/cancel', validate(schemas.cancelOrder), cancelOrder);
 

@@ -5,7 +5,11 @@ import { z } from 'zod';
 const registerSchema = z.object({
   body: z.object({
     email: z.string().email('Invalid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    password: z.string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number'),
     firstName: z.string().min(1, 'First name is required').max(50),
     lastName: z.string().min(1, 'Last name is required').max(50),
   }),
@@ -39,7 +43,11 @@ const updateProfileSchema = z.object({
 const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    newPassword: z.string()
+      .min(8, 'New password must be at least 8 characters')
+      .regex(/[A-Z]/, 'New password must contain at least one uppercase letter')
+      .regex(/[a-z]/, 'New password must contain at least one lowercase letter')
+      .regex(/[0-9]/, 'New password must contain at least one number'),
   }),
 });
 
@@ -49,7 +57,7 @@ const changePasswordSchema = z.object({
  */
 export async function register(req, res, next) {
   try {
-    const result = await authService.register(req.body);
+    const result = await authService.register(req.body, req);
     
     res.status(201).json({
       success: true,
@@ -97,7 +105,7 @@ export async function logout(req, res, next) {
   try {
     await authService.logout(req);
     
-    res.clearCookie(process.env.SESSION_COOKIE_NAME || 'dr_session');
+    res.clearCookie(process.env.SESSION_COOKIE_NAME || '3sh_session');
     
     res.json({
       success: true,

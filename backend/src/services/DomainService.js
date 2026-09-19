@@ -3,8 +3,15 @@ import { Domain } from '../models/Domain.js';
 import { Contact } from '../models/Contact.js';
 import { NameserverGroup } from '../models/Nameserver.js';
 import { User } from '../models/User.js';
+import { mapDomainsError } from '../utils/domainsErrors.js';
+import { AppError } from '../middleware/errorHandler.js';
 
 class DomainService {
+  constructor() {
+    this._pricingCache = null;
+    this._pricingCacheExpiry = 0;
+    this._PRICING_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+  }
   /**
    * Check domain availability and get pricing
    */
@@ -12,60 +19,53 @@ class DomainService {
     const { sld, tld } = this.parseDomain(domainInput);
     
     if (!sld || !tld) {
-      throw new Error('Invalid domain format');
+      throw AppError.badRequest('Invalid domain format');
     }
     
-    try {
-      await domainsClient.initialize();
-      const result = await domainsClient.checkDomain(sld, tld);
+    await domainsClient.initialize();
+    const result = await domainsClient.checkDomain(sld, tld);
 
-      const available = result.isAvailable === 'true';
-      const premium = result.isPremium === 'true';
+    // Check for API-level errors
+    const apiError = mapDomainsError(result, `Domain check ${sld}.${tld}`);
+    if (apiError) throw apiError;
 
-      let pricing = {
-        registration: parseFloat(result.registrationPrice || result.registration || 0),
-        renewal: parseFloat(result.renewalPrice || result.renewal || 0),
-        transfer: parseFloat(result.transferPrice || result.transfer || 0),
-        currency: result.objReseller?.currency || 'ZAR',
-      };
+    const available = result.isAvailable === 'true';
+    const premium = result.isPremium === 'true';
 
-      // Fallback: look up pricing from arrPrices if check doesn't include it
-      if (pricing.registration === 0) {
-        try {
-          const pricingResult = await domainsClient.getPricing();
-          const tlds = pricingResult.arrPrices || {};
-          const tldKey = tld.startsWith('.') ? tld : '.' + tld;
-          const tldPricing = tlds[tldKey] || tlds[tld] || {};
-          if (tldPricing.registration) pricing.registration = parseFloat(tldPricing.registration);
-          if (tldPricing.renewal) pricing.renewal = parseFloat(tldPricing.renewal);
-          if (tldPricing.transfer) pricing.transfer = parseFloat(tldPricing.transfer);
-        } catch {}
+    let pricing = {
+      registration: parseFloat(result.registrationPrice || result.registration || 0),
+      renewal: parseFloat(result.renewalPrice || result.renewal || 0),
+      transfer: parseFloat(result.transferPrice || result.transfer || 0),
+      currency: result.objReseller?.currency || 'ZAR',
+    };
+
+    // Fallback: look up pricing from cache if check doesn't include it
+    if (pricing.registration === 0) {
+      try {
+        const allPricing = await this.getPricing();
+        const tldKey = tld.startsWith('.') ? tld : '.' + tld;
+        const match = allPricing.find(p => p.tld === tldKey || p.tld === tld);
+        if (match) {
+          if (match.registration) pricing.registration = match.registration;
+          if (match.renewal) pricing.renewal = match.renewal;
+          if (match.transfer) pricing.transfer = match.transfer;
+        }
+      } catch (err) {
+        console.warn('Failed to fetch pricing fallback:', err.message);
       }
-
-      return {
-        domain: `${sld}.${tld}`,
-        sld,
-        tld: `.${tld}`,
-        available,
-        premium,
-        status: available ? (premium ? 'premium' : 'available') : 'taken',
-        pricing,
-        balance: result.objReseller?.balance,
-        checkedAt: new Date(),
-      };
-    } catch (error) {
-      console.error('Domain check failed:', error);
-      return {
-        domain: `${sld}.${tld}`,
-        sld,
-        tld: `.${tld}`,
-        available: false,
-        premium: false,
-        status: 'unknown',
-        pricing: { registration: 0, renewal: 0, transfer: 0, currency: 'ZAR' },
-        error: error.message,
-      };
     }
+
+    return {
+      domain: `${sld}.${tld}`,
+      sld,
+      tld: `.${tld}`,
+      available,
+      premium,
+      status: available ? (premium ? 'premium' : 'available') : 'taken',
+      pricing,
+      balance: result.objReseller?.balance,
+      checkedAt: new Date(),
+    };
   }
   
   /**
@@ -75,7 +75,7 @@ class DomainService {
     const { sld, tld } = this.parseDomain(query);
     
     if (!sld) {
-      throw new Error('Invalid domain name');
+      throw AppError.badRequest('Invalid domain name');
     }
     
     const requestedTld = tld || 'com';
@@ -83,33 +83,37 @@ class DomainService {
     // Check primary domain
     const primaryResult = await this.checkDomain(`${sld}.${requestedTld}`, options);
     
-    // Common TLDs for alternatives
+    // Common TLDs for alternatives — check in batches to avoid hammering API
     const commonTlds = ['com', 'net', 'org', 'io', 'co', 'ng', 'co.za', 'africa', 'online', 'store', 'tech', 'xyz'];
     
-    // Check alternatives in parallel (max 8)
-    const altPromises = commonTlds
+    // Use cached pricing to avoid individual check calls per alternative
+    let allPricing = [];
+    try {
+      allPricing = await this.getPricing();
+    } catch (err) {
+      console.warn('Failed to load pricing for alternatives:', err.message);
+    }
+    
+    const alternatives = commonTlds
       .filter(altTld => altTld !== requestedTld)
       .slice(0, 8)
-      .map(async (altTld) => {
-        try {
-          const altResult = await this.checkDomain(`${sld}.${altTld}`, options);
-          return {
-            domain: altResult.domain,
-            tld: `.${altTld}`,
-            status: altResult.status,
-            pricing: altResult.pricing,
-          };
-        } catch {
-          return {
-            domain: `${sld}.${altTld}`,
-            tld: `.${altTld}`,
-            status: 'unknown',
-            pricing: { registration: 0, renewal: 0, transfer: 0, currency: 'ZAR' },
-          };
-        }
+      .map(altTld => {
+        const tldKey = altTld.startsWith('.') ? altTld : '.' + altTld;
+        const match = allPricing.find(p => p.tld === tldKey || p.tld === altTld);
+        // Pricing exists means the TLD is supported, but we haven't checked availability
+        const hasPricing = match && match.registration > 0;
+        return {
+          domain: `${sld}.${altTld}`,
+          tld: `.${altTld}`,
+          status: hasPricing ? 'priced' : 'unsupported',
+          pricing: {
+            registration: match?.registration || 0,
+            renewal: match?.renewal || 0,
+            transfer: match?.transfer || 0,
+            currency: match?.currency || 'ZAR',
+          },
+        };
       });
-    
-    const alternatives = await Promise.all(altPromises);
     
     // Generate suggestions if primary is taken
     const suggestions = [];
@@ -117,26 +121,28 @@ class DomainService {
       const prefixes = ['get', 'my', 'try', 'go', 'the'];
       const suffixes = ['hub', 'ly', 'hq', 'online', 'app', 'site'];
       
-      const sugPromises = [
+      const names = [
         ...prefixes.map(p => `${p}${sld}`),
         ...suffixes.map(s => `${sld}${s}`),
-      ].slice(0, 8).map(async (name) => {
-        try {
-          const result = await this.checkDomain(`${name}.${requestedTld}`, options);
-          if (result.status === 'available') {
-            return {
-              domain: result.domain,
-              status: 'available',
-              pricing: result.pricing,
-            };
-          }
-        } catch {}
-        return null;
-      });
+      ].slice(0, 8);
       
-      const sugResults = await Promise.all(sugPromises);
-      for (const sug of sugResults) {
-        if (sug && suggestions.length < 4) suggestions.push(sug);
+      // Use pricing cache to suggest available names without extra API calls
+      const tldKey = requestedTld.startsWith('.') ? requestedTld : '.' + requestedTld;
+      for (const name of names) {
+        if (suggestions.length >= 4) break;
+        const tldMatch = allPricing.find(p => p.tld === tldKey || p.tld === requestedTld);
+        if (tldMatch && tldMatch.registration > 0) {
+          suggestions.push({
+            domain: `${name}.${requestedTld}`,
+            status: 'unchecked',
+            pricing: {
+              registration: tldMatch.registration,
+              renewal: tldMatch.renewal,
+              transfer: tldMatch.transfer,
+              currency: tldMatch.currency || 'ZAR',
+            },
+          });
+        }
       }
     }
     
@@ -148,14 +154,19 @@ class DomainService {
   }
   
   /**
-   * Get pricing for all TLDs
+   * Get pricing for all TLDs (cached for 1 hour)
    */
   async getPricing() {
+    const now = Date.now();
+    if (this._pricingCache && now < this._pricingCacheExpiry) {
+      return this._pricingCache;
+    }
+
     await domainsClient.initialize();
     const result = await domainsClient.getPricing();
 
     if (result.intReturnCode !== 1) {
-      throw new Error('Failed to fetch pricing: ' + (result.strMessage || 'unknown'));
+      throw AppError.internal('Failed to fetch pricing: ' + (result.strMessage || 'unknown'));
     }
 
     const pricing = [];
@@ -179,6 +190,9 @@ class DomainService {
         category: tld.category || 'General',
       });
     }
+
+    this._pricingCache = pricing;
+    this._pricingCacheExpiry = now + this._PRICING_CACHE_TTL;
 
     return pricing;
   }
@@ -218,16 +232,50 @@ class DomainService {
 
     // Contact details from local contacts or user profile
     if (contacts) {
-      const contact = await this.resolveContactForRegistrar(userId, contacts);
-      if (contact) {
-        regParams.registrantName = contact.fullName || `${contact.firstName} ${contact.lastName}`;
-        regParams.registrantEmail = contact.email;
-        regParams.registrantCountry = contact.address?.country || 'ZA';
-        regParams.registrantProvince = contact.address?.state || '';
-        regParams.registrantContactNumber = contact.phone || '';
-        regParams.registrantPostalCode = contact.address?.postalCode || '';
-        regParams.registrantAddress1 = contact.address?.street || '';
-        regParams.registrantCity = contact.address?.city || '';
+      const resolved = await this.resolveContactForRegistrar(userId, contacts);
+      if (resolved.registrant) {
+        const r = resolved.registrant;
+        regParams.registrantName = r.fullName || `${r.firstName} ${r.lastName}`;
+        regParams.registrantEmail = r.email;
+        regParams.registrantCountry = r.address?.country || 'ZA';
+        regParams.registrantProvince = r.address?.state || '';
+        regParams.registrantContactNumber = r.phone || '';
+        regParams.registrantPostalCode = r.address?.postalCode || '';
+        regParams.registrantAddress1 = r.address?.street || '';
+        regParams.registrantCity = r.address?.city || '';
+      }
+      if (resolved.admin) {
+        const a = resolved.admin;
+        regParams.adminName = a.fullName || `${a.firstName} ${a.lastName}`;
+        regParams.adminEmail = a.email;
+        regParams.adminCountry = a.address?.country || 'ZA';
+        regParams.adminProvince = a.address?.state || '';
+        regParams.adminContactNumber = a.phone || '';
+        regParams.adminPostalCode = a.address?.postalCode || '';
+        regParams.adminAddress1 = a.address?.street || '';
+        regParams.adminCity = a.address?.city || '';
+      }
+      if (resolved.tech) {
+        const t = resolved.tech;
+        regParams.techName = t.fullName || `${t.firstName} ${t.lastName}`;
+        regParams.techEmail = t.email;
+        regParams.techCountry = t.address?.country || 'ZA';
+        regParams.techProvince = t.address?.state || '';
+        regParams.techContactNumber = t.phone || '';
+        regParams.techPostalCode = t.address?.postalCode || '';
+        regParams.techAddress1 = t.address?.street || '';
+        regParams.techCity = t.address?.city || '';
+      }
+      if (resolved.billing) {
+        const b = resolved.billing;
+        regParams.billingName = b.fullName || `${b.firstName} ${b.lastName}`;
+        regParams.billingEmail = b.email;
+        regParams.billingCountry = b.address?.country || 'ZA';
+        regParams.billingProvince = b.address?.state || '';
+        regParams.billingContactNumber = b.phone || '';
+        regParams.billingPostalCode = b.address?.postalCode || '';
+        regParams.billingAddress1 = b.address?.street || '';
+        regParams.billingCity = b.address?.city || '';
       }
     }
 
@@ -282,11 +330,50 @@ class DomainService {
     }
 
     if (contacts) {
-      const contact = await this.resolveContactForRegistrar(userId, contacts);
-      if (contact) {
-        transferParams.registrantName = contact.fullName || `${contact.firstName} ${contact.lastName}`;
-        transferParams.registrantEmail = contact.email;
-        transferParams.registrantCountry = contact.address?.country || 'ZA';
+      const resolved = await this.resolveContactForRegistrar(userId, contacts);
+      if (resolved.registrant) {
+        const r = resolved.registrant;
+        transferParams.registrantName = r.fullName || `${r.firstName} ${r.lastName}`;
+        transferParams.registrantEmail = r.email;
+        transferParams.registrantCountry = r.address?.country || 'ZA';
+        transferParams.registrantProvince = r.address?.state || '';
+        transferParams.registrantContactNumber = r.phone || '';
+        transferParams.registrantPostalCode = r.address?.postalCode || '';
+        transferParams.registrantAddress1 = r.address?.street || '';
+        transferParams.registrantCity = r.address?.city || '';
+      }
+      if (resolved.admin) {
+        const a = resolved.admin;
+        transferParams.adminName = a.fullName || `${a.firstName} ${a.lastName}`;
+        transferParams.adminEmail = a.email;
+        transferParams.adminCountry = a.address?.country || 'ZA';
+        transferParams.adminProvince = a.address?.state || '';
+        transferParams.adminContactNumber = a.phone || '';
+        transferParams.adminPostalCode = a.address?.postalCode || '';
+        transferParams.adminAddress1 = a.address?.street || '';
+        transferParams.adminCity = a.address?.city || '';
+      }
+      if (resolved.tech) {
+        const t = resolved.tech;
+        transferParams.techName = t.fullName || `${t.firstName} ${t.lastName}`;
+        transferParams.techEmail = t.email;
+        transferParams.techCountry = t.address?.country || 'ZA';
+        transferParams.techProvince = t.address?.state || '';
+        transferParams.techContactNumber = t.phone || '';
+        transferParams.techPostalCode = t.address?.postalCode || '';
+        transferParams.techAddress1 = t.address?.street || '';
+        transferParams.techCity = t.address?.city || '';
+      }
+      if (resolved.billing) {
+        const b = resolved.billing;
+        transferParams.billingName = b.fullName || `${b.firstName} ${b.lastName}`;
+        transferParams.billingEmail = b.email;
+        transferParams.billingCountry = b.address?.country || 'ZA';
+        transferParams.billingProvince = b.address?.state || '';
+        transferParams.billingContactNumber = b.phone || '';
+        transferParams.billingPostalCode = b.address?.postalCode || '';
+        transferParams.billingAddress1 = b.address?.street || '';
+        transferParams.billingCity = b.address?.city || '';
       }
     }
 
@@ -318,10 +405,10 @@ class DomainService {
    */
   async renewDomain(userId, domainId, years = 1) {
     const domain = await Domain.findOne({ _id: domainId, userId });
-    if (!domain) throw new Error('Domain not found');
+    if (!domain) throw AppError.notFound('Domain not found');
     
-    if (!domain.isRenewable) {
-      throw new Error('Domain cannot be renewed in current status');
+    if (!domain.isRenewable()) {
+      throw AppError.badRequest('Domain cannot be renewed in current status');
     }
     
     await domainsClient.initialize();
@@ -329,11 +416,16 @@ class DomainService {
     const tld = domain.extension.replace(/^\./, '');
     
     const result = await domainsClient.renewDomain(sld, tld, years);
+
+    const apiError = mapDomainsError(result, `Domain renewal ${domain.fullDomainName}`);
+    if (apiError) throw apiError;
     
     domain.status = 'active';
-    domain.expirationDate = new Date(domain.expirationDate.getTime() + years * 365 * 24 * 60 * 60 * 1000);
+    // Add renewal period in days (365 per year, approximate)
+    const renewalMs = years * 365 * 24 * 60 * 60 * 1000;
+    domain.expirationDate = new Date(domain.expirationDate.getTime() + renewalMs);
     domain.renewalDate = domain.expirationDate;
-    domain.price.period = years;
+    // Preserve original registration period, don't overwrite with renewal years
     await domain.save();
     
     return { domain, registrarResult: result };
@@ -349,7 +441,7 @@ class DomainService {
       .populate('contacts.tech')
       .populate('contacts.billing');
     
-    if (!domain) throw new Error('Domain not found');
+    if (!domain) throw AppError.notFound('Domain not found');
     
     // Optionally fetch fresh data from registrar
     if (options.fresh) {
@@ -404,7 +496,7 @@ class DomainService {
    */
   async getAuthCode(userId, domainId) {
     const domain = await Domain.findOne({ _id: domainId, userId });
-    if (!domain) throw new Error('Domain not found');
+    if (!domain) throw AppError.notFound('Domain not found');
     
     await domainsClient.initialize();
     const sld = domain.domainName;
@@ -419,7 +511,7 @@ class DomainService {
    */
   async updateDomain(userId, domainId, updateData) {
     const domain = await Domain.findOne({ _id: domainId, userId });
-    if (!domain) throw new Error('Domain not found');
+    if (!domain) throw AppError.notFound('Domain not found');
     
     await domainsClient.initialize();
     const sld = domain.domainName;
@@ -460,9 +552,9 @@ class DomainService {
   /**
    * Delete domain
    */
-  async deleteDomain(userId, domainId) {
+  async deleteDomain(userId, domainId, options = {}) {
     const domain = await Domain.findOne({ _id: domainId, userId });
-    if (!domain) throw new Error('Domain not found');
+    if (!domain) throw AppError.notFound('Domain not found');
     
     await domainsClient.initialize();
     const sld = domain.domainName;
@@ -483,43 +575,44 @@ class DomainService {
    */
   async whoisLookup(domainInput) {
     const { sld, tld } = this.parseDomain(domainInput);
-    if (!sld || !tld) throw new Error('Invalid domain');
+    if (!sld || !tld) throw AppError.badRequest('Invalid domain');
     
-    try {
-      await domainsClient.initialize();
-      const checkResult = await domainsClient.checkDomain(sld, tld);
+    await domainsClient.initialize();
+    const checkResult = await domainsClient.checkDomain(sld, tld);
 
-      const available = checkResult.isAvailable === 'true';
+    const apiError = mapDomainsError(checkResult, `WHOIS lookup ${sld}.${tld}`);
+    if (apiError) throw apiError;
 
-      if (available) {
-        return { domain: `${sld}.${tld}`, available: true };
-      }
+    const available = checkResult.isAvailable === 'true';
 
-      // Domain is registered — try to get details
-      try {
-        const domainInfo = await domainsClient.getDomain(sld, tld);
-        if (domainInfo.intReturnCode === 1 && domainInfo.data) {
-          return {
-            domain: `${sld}.${tld}`,
-            available: false,
-            registrar: 'Domains.co.za',
-            created: domainInfo.data.intCrDate ? new Date(domainInfo.data.intCrDate * 1000).toISOString() : null,
-            expires: domainInfo.data.intExDate ? new Date(domainInfo.data.intExDate * 1000).toISOString() : null,
-            status: domainInfo.data.status || 'registered',
-            nameServers: domainInfo.data.nameservers?.map(ns => ns.name) || [],
-            privacy: domainInfo.data.bPrivacy || false,
-          };
-        }
-      } catch {}
-
-      return {
-        domain: `${sld}.${tld}`,
-        available: false,
-        registrar: 'Unknown',
-      };
-    } catch {
+    if (available) {
       return { domain: `${sld}.${tld}`, available: true };
     }
+
+    // Domain is registered — try to get details
+    try {
+      const domainInfo = await domainsClient.getDomain(sld, tld);
+      if (domainInfo.intReturnCode === 1 && domainInfo.data) {
+        return {
+          domain: `${sld}.${tld}`,
+          available: false,
+          registrar: 'Domains.co.za',
+          created: domainInfo.data.intCrDate ? new Date(domainInfo.data.intCrDate * 1000).toISOString() : null,
+          expires: domainInfo.data.intExDate ? new Date(domainInfo.data.intExDate * 1000).toISOString() : null,
+          status: domainInfo.data.status || 'registered',
+          nameServers: domainInfo.data.nameservers?.map(ns => ns.name) || [],
+          privacy: domainInfo.data.bPrivacy || false,
+        };
+      }
+    } catch (err) {
+      console.warn('WHOIS domain detail fetch failed:', err.message);
+    }
+
+    return {
+      domain: `${sld}.${tld}`,
+      available: false,
+      registrar: 'Unknown',
+    };
   }
   
   /**
@@ -605,32 +698,40 @@ class DomainService {
   }
 
   async resolveContactForRegistrar(userId, contactRefs) {
-    // contactRefs can be IDs or objects with contact details
-    const contactId = contactRefs.registrant || contactRefs.admin;
-    if (!contactId) return null;
-
-    if (typeof contactId === 'object' && contactId.firstName) {
+    // Resolve any contact reference (ID or object) to a contact record
+    const resolveOne = async (ref) => {
+      if (!ref) return null;
+      if (typeof ref === 'object' && ref.firstName) {
+        return {
+          fullName: `${ref.firstName} ${ref.lastName}`,
+          firstName: ref.firstName,
+          lastName: ref.lastName,
+          email: ref.email,
+          phone: ref.phone,
+          address: ref.address,
+        };
+      }
+      const contact = await Contact.findById(ref);
+      if (!contact) return null;
       return {
-        fullName: `${contactId.firstName} ${contactId.lastName}`,
-        firstName: contactId.firstName,
-        lastName: contactId.lastName,
-        email: contactId.email,
-        phone: contactId.phone,
-        address: contactId.address,
+        fullName: contact.fullName,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        email: contact.email,
+        phone: contact.formattedPhone,
+        address: contact.address,
       };
-    }
-
-    const contact = await Contact.findById(contactId);
-    if (!contact) return null;
-
-    return {
-      fullName: contact.fullName,
-      firstName: contact.firstName,
-      lastName: contact.lastName,
-      email: contact.email,
-      phone: contact.formattedPhone,
-      address: contact.address,
     };
+
+    // Resolve all four contact types
+    const [registrant, admin, tech, billing] = await Promise.all([
+      resolveOne(contactRefs.registrant),
+      resolveOne(contactRefs.admin),
+      resolveOne(contactRefs.tech),
+      resolveOne(contactRefs.billing),
+    ]);
+
+    return { registrant, admin, tech, billing };
   }
   
   async getDefaultNameservers(userId) {

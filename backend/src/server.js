@@ -1,4 +1,3 @@
-import 'dotenv/config';
 /**
  * Domain Reseller Backend - Entry Point
  * (Environment variables already loaded by bootstrap.js)
@@ -28,9 +27,23 @@ const server = app.listen(PORT, '0.0.0.0', (err) => {
       `);
     });
     
+    // Start poll worker for domain status sync
+    try {
+      const { pollWorker } = await import('./services/PollWorker.js');
+      pollWorker.start();
+    } catch (err) {
+      console.warn('Poll worker failed to start:', err.message);
+    }
+    
     // Graceful shutdown
     const shutdown = async (signal) => {
       console.log(`\n${signal} received. Shutting down gracefully...`);
+      
+      // Stop poll worker
+      try {
+        const { pollWorker } = await import('./services/PollWorker.js');
+        pollWorker.stop();
+      } catch {}
       
       server.close(async () => {
         console.log('HTTP server closed');

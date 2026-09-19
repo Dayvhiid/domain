@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 
 const orderItemSchema = new mongoose.Schema({
   domainName: { type: String, required: true, lowercase: true, trim: true },
@@ -57,7 +58,7 @@ const orderSchema = new mongoose.Schema({
   tax: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
   total: { type: Number, required: true, default: 0 },
-  currency: { type: String, default: 'USD' },
+  currency: { type: String, default: 'ZAR' },
   // Status
   status: {
     type: String,
@@ -122,8 +123,8 @@ orderSchema.pre('save', async function(next) {
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
-    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-    this.orderNumber = `DR${year}${month}${day}-${random}`;
+    const unique = uuidv4().split('-')[0].toUpperCase();
+    this.orderNumber = `DR${year}${month}${day}-${unique}`;
   }
   
   // Calculate totals

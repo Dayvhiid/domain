@@ -59,6 +59,8 @@ export function sanitizeInput(req, res, next) {
     
     const sanitized = {};
     for (const [key, value] of Object.entries(obj)) {
+      // Guard against prototype pollution
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
       if (value !== undefined && value !== null) {
         sanitized[key] = sanitize(value);
       }

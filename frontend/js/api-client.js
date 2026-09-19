@@ -19,14 +19,23 @@ class ApiError extends Error {
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE}${endpoint}`;
   
-  const res = await fetch(url, {
-    credentials: 'include', // Critical for session cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
+  let res;
+  try {
+    res = await fetch(url, {
+      credentials: 'include', // Critical for session cookies
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+  } catch (err) {
+    // Network failure (DNS, CORS, offline, etc.)
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new ApiError('Network error — check your connection', 'NETWORK_ERROR', 0);
+    }
+    throw new ApiError(err.message || 'Request failed', 'FETCH_ERROR', 0);
+  }
 
   const contentType = res.headers.get('content-type');
   const isJson = contentType?.includes('application/json');
@@ -43,6 +52,7 @@ async function apiRequest(endpoint, options = {}) {
 
 /**
  * Parse domain input into SLD and TLD
+ * Returns { sld, tld } where tld does NOT include the leading dot
  */
 function parseDomain(input) {
   if (!input || typeof input !== 'string') return null;
@@ -55,11 +65,11 @@ function parseDomain(input) {
     for (const tld of multiPartTlds) {
       if (raw.endsWith('.' + tld)) {
         const sld = raw.slice(0, -(tld.length + 1));
-        if (sld) return { sld, tld: '.' + tld };
+        if (sld) return { sld, tld };
       }
     }
     const idx = raw.lastIndexOf('.');
-    return { sld: raw.slice(0, idx), tld: raw.slice(idx) };
+    return { sld: raw.slice(0, idx), tld: raw.slice(idx + 1) };
   }
   return { sld: raw, tld: null };
 }
@@ -75,9 +85,9 @@ async function searchDomain(query) {
   const cleanSld = parsed.sld.replace(/[^a-z0-9-]/g, '').slice(0, 63);
   if (!cleanSld) throw new Error('Invalid domain name');
   
-  const requestedTld = parsed.tld || '.com';
+  const requestedTld = parsed.tld || 'com';
   
-  const data = await apiRequest(`/domains/search?domain=${encodeURIComponent(cleanSld + requestedTld)}`);
+  const data = await apiRequest(`/domains/search?domain=${encodeURIComponent(cleanSld + '.' + requestedTld)}`);
   
   const result = data.data || data;
   
@@ -118,7 +128,7 @@ async function whoisLookup(domain) {
   const parsed = parseDomain(domain);
   if (!parsed) throw new Error('Invalid domain');
   
-  const fullDomain = parsed.tld ? `${parsed.sld}${parsed.tld}` : `${parsed.sld}.com`;
+  const fullDomain = parsed.tld ? `${parsed.sld}.${parsed.tld}` : `${parsed.sld}.com`;
   
   const data = await apiRequest('/domains/whois', {
     method: 'POST',
@@ -179,11 +189,6 @@ const authApi = {
       body: JSON.stringify({ currentPassword, newPassword }),
     });
     return data;
-  },
-
-  async getMe() {
-    const data = await apiRequest('/auth/me');
-    return data.data;
   },
 };
 
@@ -418,12 +423,98 @@ const domainsApi = {
     const data = await apiRequest('/domains/dashboard/stats');
     return data.data;
   },
+
+  // ─── Lock / Unlock / Autorenew / WHOIS Privacy ────────
+
+  async getLockStatus(id) {
+    const data = await apiRequest(`/domains/${id}/lock`);
+    return data.data;
+  },
+
+  async lockDomain(id) {
+    const data = await apiRequest(`/domains/${id}/lock`, { method: 'POST' });
+    return data;
+  },
+
+  async unlockDomain(id) {
+    const data = await apiRequest(`/domains/${id}/unlock`, { method: 'POST' });
+    return data;
+  },
+
+  async toggleAutorenew(id, enabled) {
+    const data = await apiRequest(`/domains/${id}/autorenew`, {
+      method: 'POST',
+      body: JSON.stringify({ enabled }),
+    });
+    return data;
+  },
+
+  async toggleWhoisPrivacy(id, enabled) {
+    const data = await apiRequest(`/domains/${id}/whois-privacy`, {
+      method: 'POST',
+      body: JSON.stringify({ enabled }),
+    });
+    return data;
+  },
 };
 
 /**
  * DNS API
  */
 const dnsApi = {
+  // ─── DNS Zone / Record Management ─────────────────────
+
+  async getZone(sld, tld) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/zone/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}`);
+    return data.data;
+  },
+
+  async setZone(sld, tld, records, append = false) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/zone/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}`, {
+      method: 'POST',
+      body: JSON.stringify({ records, append }),
+    });
+    return data.data;
+  },
+
+  async deleteZone(sld, tld) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/zone/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}`, {
+      method: 'DELETE',
+    });
+    return data.data;
+  },
+
+  async addEntry(sld, tld, record) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/entry/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}`, {
+      method: 'POST',
+      body: JSON.stringify(record),
+    });
+    return data.data;
+  },
+
+  async updateEntry(sld, tld, dnsId, record) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/entry/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}/${encodeURIComponent(dnsId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(record),
+    });
+    return data.data;
+  },
+
+  async deleteEntry(sld, tld, dnsId) {
+    const cleanTld = tld.replace(/^\./, '');
+    const data = await apiRequest(`/dns/entry/${encodeURIComponent(sld)}/${encodeURIComponent(cleanTld)}/${encodeURIComponent(dnsId)}`, {
+      method: 'DELETE',
+    });
+    return data.data;
+  },
+
+  // ─── Nameserver Groups ────────────────────────────────
+
   async listNameservers(filters = {}) {
     const params = new URLSearchParams(filters).toString();
     const data = await apiRequest(`/dns/nameservers?${params}`);

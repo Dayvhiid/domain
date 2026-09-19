@@ -11,70 +11,157 @@ class DomainsClient {
     this.token = null;
     this.tokenExpiry = null;
     this.initialized = false;
+    this._loginPromise = null;
   }
 
   async initialize() {
-    if (this.initialized) return;
+    if (this.initialized && this.token) return;
     validateDomainsCozaConfig();
-    await this.login();
+    await this._loginWithMutex();
     this.initialized = true;
     console.log('Domains.co.za client initialized');
   }
 
-  async login() {
-    const { baseURL, username, password } = domainsCozaConfig;
-
-    const res = await fetch(`${baseURL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ username, password }),
-    });
-
-    const data = await res.json();
-
-    if (data.intReturnCode !== 1) {
-      throw new Error(`Domains.co.za login failed: ${data.strMessage}`);
+  /**
+   * Login mutex — prevents concurrent login calls from racing.
+   * If a login is already in progress, subsequent callers wait for it.
+   */
+  async _loginWithMutex() {
+    if (this._loginPromise) {
+      return this._loginPromise;
     }
 
-    this.token = data.token;
-    this.tokenExpiry = Date.now() + 55 * 60 * 1000;
-    console.log('Domains.co.za login successful');
-    return this.token;
+    this._loginPromise = this._doLogin();
+    try {
+      return await this._loginPromise;
+    } finally {
+      this._loginPromise = null;
+    }
+  }
+
+  async _doLogin() {
+    const { baseURL, username, password } = domainsCozaConfig;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), domainsCozaConfig.timeout || 30000);
+
+    try {
+      const res = await fetch(`${baseURL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ username, password }),
+        signal: controller.signal,
+      });
+
+      const data = await res.json();
+
+      if (data.intReturnCode !== 1) {
+        throw new Error(`Domains.co.za login failed: ${data.strMessage}`);
+      }
+
+      this.token = data.token;
+      this.tokenExpiry = Date.now() + 55 * 60 * 1000;
+      this.initialized = true;
+      console.log('Domains.co.za login successful');
+      return this.token;
+    } catch (err) {
+      this.initialized = false;
+      if (err.name === 'AbortError') {
+        throw new Error('Domains.co.za login timed out');
+      }
+      if (err.message?.includes('login failed')) throw err;
+      throw new Error(`Domains.co.za login network error: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  /**
+   * Execute a fetch call with timeout.
+   */
+  async _fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), domainsCozaConfig.timeout || 30000);
+
+    try {
+      const res = await fetch(url, { ...options, signal: controller.signal });
+      return res;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error(`Domains.co.za request timed out: ${url}`);
+      }
+      throw new Error(`Domains.co.za network error: ${err.message}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  /**
+   * Make a single API call (no retry, no auth handling).
+   */
+  async _rawCall(endpoint, { method = 'GET', params = {} } = {}) {
+    const query = new URLSearchParams(params).toString();
+    const { baseURL } = domainsCozaConfig;
+
+    const isBody = method === 'POST' || method === 'PUT' || method === 'DELETE';
+    const url = isBody
+      ? `${baseURL}/${endpoint}`
+      : `${baseURL}/${endpoint}${query ? `?${query}` : ''}`;
+
+    const res = await this._fetchWithTimeout(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: isBody ? query : undefined,
+    });
+
+    return res.json();
   }
 
   async request(endpoint, { method = 'GET', params = {} } = {}) {
-    if (!this.initialized) await this.login();
-
-    const doCall = async () => {
-      const query = new URLSearchParams(params).toString();
-      const { baseURL } = domainsCozaConfig;
-
-      const isBody = method === 'POST' || method === 'PUT' || method === 'DELETE';
-      const url = isBody
-        ? `${baseURL}/${endpoint}`
-        : `${baseURL}/${endpoint}${query ? `?${query}` : ''}`;
-
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: isBody ? query : undefined,
-      });
-
-      return res.json();
-    };
-
-    let data = await doCall();
-
-    // Transparent re-auth on expired/invalid token
-    if (data.intReturnCode === 6) {
-      await this.login();
-      data = await doCall();
+    if (!this.initialized || !this.token) {
+      await this._loginWithMutex();
     }
 
-    return data;
+    const { maxRetries = 3, baseDelay = 1000, maxDelay = 10000 } = domainsCozaConfig.retry || {};
+    let lastError;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        let data = await this._rawCall(endpoint, { method, params });
+
+        // Transparent re-auth on expired/invalid token
+        if (data.intReturnCode === 6) {
+          await this._loginWithMutex();
+          data = await this._rawCall(endpoint, { method, params });
+        }
+
+        // Check for retryable API-level errors
+        if (data.intReturnCode && data.intReturnCode !== 1 && data.intReturnCode !== 2) {
+          const retryable = [16, 17, 18, 20, 22]; // transient registry errors
+          if (retryable.includes(data.intReturnCode) && attempt < maxRetries) {
+            const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+            console.warn(`Domains.co.za retryable error ${data.intReturnCode}, retry ${attempt + 1}/${maxRetries} in ${delay}ms`);
+            await new Promise(r => setTimeout(r, delay));
+            continue;
+          }
+        }
+
+        return data;
+      } catch (err) {
+        lastError = err;
+        if (attempt < maxRetries) {
+          const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+          console.warn(`Domains.co.za request error, retry ${attempt + 1}/${maxRetries} in ${delay}ms: ${err.message}`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+      }
+    }
+
+    throw lastError || new Error('Domains.co.za request failed after retries');
   }
 
   // ─── Account ──────────────────────────────────────────

@@ -1,7 +1,6 @@
 import { API } from './api-client.js';
 
-// Make API globally available for backwards compatibility
-window.MockAPI = API;
+// Make API globally available
 window.API = API;
 
 // Auth state management - load from localStorage synchronously first
@@ -18,11 +17,17 @@ async function checkAuthSession() {
       window.APP_USER = result.user;
       localStorage.setItem('dp_user', JSON.stringify(result.user));
     } else {
+      // Session valid but no user — clear stale data
       window.APP_USER = null;
       localStorage.removeItem('dp_user');
     }
-  } catch {
-    // Network error — keep cached user, don't force logout
+  } catch (err) {
+    // 401 = not authenticated — clear stale localStorage
+    if (err.status === 401) {
+      window.APP_USER = null;
+      localStorage.removeItem('dp_user');
+    }
+    // Network error (status 0) — keep cached user, don't force logout
   }
 
   updateAuthUI();
@@ -86,15 +91,21 @@ async function initPricing() {
   const grid = document.getElementById("pricing-tbody");
   if (!grid) return;
   
+  // Show loading state
+  grid.innerHTML = `<div class="ext-empty">Loading pricing data…</div>`;
+  
   let data = [];
   
   try {
     data = await API.getPricing();
   } catch (err) {
     console.error('Failed to load pricing:', err);
-    window.toast("Failed to load pricing data", "error");
+    grid.innerHTML = `<div class="ext-empty" style="color:#f87171;">Failed to load pricing data. Please try again later.</div>`;
     return;
   }
+  
+  // Sort by TLD name for consistent display
+  data.sort((a, b) => (a.tld || '').localeCompare(b.tld || ''));
   
   function render() {
     const q = (search?.value || "").toLowerCase();
@@ -104,8 +115,8 @@ async function initPricing() {
     grid.innerHTML = filtered.map(r => `
       <div class="ext-card">
         <div class="ext-card-top">
-          <span class="ext-name">${r.tld}</span>
-          <span class="ext-category">${r.category}</span>
+          <span class="ext-name">${escapeHtml(r.tld)}</span>
+          <span class="ext-category">${escapeHtml(r.category)}</span>
         </div>
         <div class="ext-prices">
           <div class="ext-price-item">
@@ -121,12 +132,14 @@ async function initPricing() {
             <span class="ext-price-value">${formatPrice(r.transfer)}</span>
           </div>
         </div>
-        <a href="search-results.html?domain=example${r.tld}" class="ext-action">Check availability</a>
+        <a href="search-results.html?domain=example${encodeURIComponent(r.tld)}" class="ext-action">Check availability</a>
       </div>
     `).join("") || `<div class="ext-empty">No extensions match your filter.</div>`;
     
     document.getElementById("pricing-count").textContent = `${filtered.length} extensions`;
   }
+  
+  render();
   
   search?.addEventListener("input", render);
   filter?.addEventListener("change", render);
@@ -143,6 +156,12 @@ async function initWhois() {
     const v = input.value.trim();
     if (!v) { window.toast("Enter a domain", "error"); return; }
     
+    // Validate domain format
+    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(v)) {
+      window.toast("Enter a valid domain (e.g. example.com)", "error");
+      return;
+    }
+    
     loading.hidden = false;
     out.innerHTML = "";
     
@@ -152,26 +171,26 @@ async function initWhois() {
       if (res.available) {
         out.innerHTML = `<div class="card p-6 text-center">
           <div class="badge badge-success mb-3">Available</div>
-          <p class="font-medium">${res.domain} is available!</p>
+          <p class="font-medium">${escapeHtml(res.domain)} is available!</p>
           <a href="search-results.html?domain=${encodeURIComponent(res.domain)}" class="btn btn-primary mt-4">Register now</a>
         </div>`;
       } else {
         out.innerHTML = `<div class="card p-6">
           <div class="flex items-center gap-2 mb-4">
             <span class="badge badge-danger">Registered</span>
-            <span class="font-mono font-medium">${res.domain}</span>
+            <span class="font-mono font-medium">${escapeHtml(res.domain)}</span>
           </div>
           <dl class="grid sm:grid-cols-2 gap-4 text-subheadline">
-            <div><dt class="text-tertiary-label">Registrar</dt><dd class="font-medium">${res.registrar}</dd></div>
-            <div><dt class="text-tertiary-label">Created</dt><dd class="font-medium">${res.created}</dd></div>
-            <div><dt class="text-tertiary-label">Expires</dt><dd class="font-medium">${res.expires}</dd></div>
+            <div><dt class="text-tertiary-label">Registrar</dt><dd class="font-medium">${escapeHtml(res.registrar)}</dd></div>
+            <div><dt class="text-tertiary-label">Created</dt><dd class="font-medium">${escapeHtml(res.created)}</dd></div>
+            <div><dt class="text-tertiary-label">Expires</dt><dd class="font-medium">${escapeHtml(res.expires)}</dd></div>
             <div><dt class="text-tertiary-label">Privacy</dt><dd class="font-medium">${res.privacy ? "Enabled (redacted)" : "Disabled"}</dd></div>
           </dl>
           <p class="text-caption-1 text-quaternary-label mt-4">WHOIS data is shown with privacy — personal data redacted.</p>
         </div>`;
       }
     } catch (err) {
-      out.innerHTML = `<div class="card p-6 border-danger/20 bg-danger/5 text-danger text-sm">${err.message}</div>`;
+      out.innerHTML = `<div class="card p-6" style="border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.05);color:#f87171;">${escapeHtml(err.message)}</div>`;
     } finally {
       loading.hidden = true;
     }
@@ -183,6 +202,7 @@ function initCart() {
   const emptyEl = document.getElementById("cart-empty");
   const listEl = document.getElementById("cart-list");
   const summaryEl = document.getElementById("cart-summary");
+  const checkoutBtn = document.getElementById("cart-checkout-btn");
   
   function render() {
     const items = Cart.load();
@@ -190,16 +210,18 @@ function initCart() {
       listEl.innerHTML = "";
       summaryEl.hidden = true;
       emptyEl.hidden = false;
+      if (checkoutBtn) checkoutBtn.style.display = "none";
       return;
     }
     
     emptyEl.hidden = true;
     summaryEl.hidden = false;
+    if (checkoutBtn) checkoutBtn.style.display = "flex";
     
     listEl.innerHTML = items.map(it => `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:1.25rem;gap:1rem;border-bottom:1px solid rgba(255,255,255,0.04);">
         <div style="min-width:0;flex:1;">
-          <div style="font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.9375rem;color:#f4f4f5;">${it.domain}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-weight:600;font-size:.9375rem;color:#f4f4f5;">${escapeHtml(it.domain)}</div>
           <div style="font-size:.75rem;color:#52525b;margin-top:.25rem;">${formatPrice(it.registration)}/yr · Renewal ${formatPrice(it.renewal)}/yr</div>
           <div style="display:flex;align-items:center;gap:.75rem;margin-top:.75rem;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:.5rem;font-size:.8125rem;color:#a1a1aa;">Term
@@ -259,17 +281,52 @@ function initTransfer() {
       form.reportValidity();
       return;
     }
-    
+
+    // Check if user is logged in
+    if (!window.APP_USER) {
+      window.toast("Please log in to transfer a domain.", "error");
+      setTimeout(() => location.href = "login.html", 1000);
+      return;
+    }
+
+    const domainInput = document.getElementById("t-domain");
+    const eppInput = document.getElementById("t-epp");
+    const domain = domainInput?.value.trim();
+    const authCode = eppInput?.value.trim();
+
+    if (!domain || !authCode) {
+      window.toast("Domain and EPP code are required.", "error");
+      return;
+    }
+
+    // Parse domain into sld and tld
+    const dotIdx = domain.indexOf(".");
+    if (dotIdx === -1) {
+      window.toast("Enter a valid domain (e.g. example.com)", "error");
+      return;
+    }
+    const sld = domain.slice(0, dotIdx);
+    const tld = domain.slice(dotIdx + 1);
+
     const btn = form.querySelector("button[type='submit']");
-    btn.textContent = "Checking…";
+    btn.textContent = "Checking eligibility...";
     btn.disabled = true;
-    
+
     try {
-      await new Promise(r => setTimeout(r, 900));
-      window.toast("Transfer eligibility checked. You will receive instructions by email.", "success");
+      const result = await API.domainsApi.transferDomain({
+        domainName: sld,
+        extension: "." + tld,
+        authCode,
+        whoisPrivacy: true,
+        autoRenew: true,
+      });
+
+      btn.textContent = "Transfer initiated ✓";
+      btn.style.backgroundColor = "#4ade80";
+      window.toast(`Transfer for ${domain} initiated successfully!`, "success");
+      setTimeout(() => location.href = "client-dashboard.html", 2000);
     } catch (err) {
-      window.toast(err.message, "error");
-    } finally {
+      window.toast(err.message || "Transfer check failed.", "error");
       btn.textContent = "Check transfer eligibility";
       btn.disabled = false;
     }

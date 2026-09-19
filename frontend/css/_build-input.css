@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
 
 /* ============================================================
-   Domain Reseller Platform — shared theme (light + dark)
+   3StarsWebHosting — shared theme (light + dark)
    Semantic colors, dark mode, components, focus & motion.
-   Loaded by every static page (<link>) and enqueued by WordPress.
+   Loaded by every page via <link>.
    Apple HIG-compliant semantic color system with WCAG AAA contrast.
    ============================================================ */
 

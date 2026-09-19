@@ -97,6 +97,16 @@ export function validateConfig() {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
   
+  // Reject default/insecure session secrets
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (
+    sessionSecret.includes('your-super-secret') ||
+    sessionSecret.includes('change-in-production') ||
+    sessionSecret.length < 32
+  ) {
+    throw new Error('SESSION_SECRET must be a strong random string of at least 32 characters. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+  }
+  
   validateDomainsCozaConfig();
   
   console.log('Configuration validated successfully');

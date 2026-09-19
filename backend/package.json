@@ -1,7 +1,7 @@
 {
-  "name": "domain-reseller-backend",
+  "name": "3starswebhosting-backend",
   "version": "1.0.0",
-  "description": "Domain Reseller Platform - Backend API with Domains.co.za integration",
+  "description": "3StarsWebHosting - Backend API with Domains.co.za integration",
   "main": "src/bootstrap.js",
   "type": "module",
   "scripts": {

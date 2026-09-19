@@ -68,7 +68,10 @@ export function configurePassport() {
   passport.deserializeUser(async (id, done) => {
     try {
       const user = await User.findById(id);
-      done(null, user || false);
+      if (!user || !user.isActive || user.isDeleted) {
+        return done(null, false);
+      }
+      done(null, user);
     } catch (error) {
       done(error, false);
     }

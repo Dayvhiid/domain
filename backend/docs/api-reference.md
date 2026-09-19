@@ -67,18 +67,18 @@ Content-Type: application/json
   }
 }
 ```
-Sets cookie: `dr_session=...; HttpOnly; Secure; SameSite=Lax`
+Sets cookie: `3sh_session=...; HttpOnly; Secure; SameSite=Lax`
 
 ### Get Current User
 ```http
 GET /auth/me
-Cookie: dr_session=...
+Cookie: 3sh_session=...
 ```
 
 ### Update Profile
 ```http
 PUT /auth/profile
-Cookie: dr_session=...
+Cookie: 3sh_session=...
 Content-Type: application/json
 
 {
@@ -93,7 +93,7 @@ Content-Type: application/json
 ### Change Password
 ```http
 PUT /auth/password
-Cookie: dr_session=...
+Cookie: 3sh_session=...
 Content-Type: application/json
 
 {
@@ -105,7 +105,7 @@ Content-Type: application/json
 ### Logout
 ```http
 POST /auth/logout
-Cookie: dr_session=...
+Cookie: 3sh_session=...
 ```
 
 ---
@@ -353,7 +353,7 @@ POST /dns/sync
 ### Get Cart
 ```http
 GET /cart
-Cookie: dr_session=...
+Cookie: 3sh_session=...
 ```
 
 ### Add Item

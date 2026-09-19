@@ -64,7 +64,16 @@ export async function createApp() {
   // Security headers
   app.use(helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
   }));
   
   // CORS configuration
@@ -86,8 +95,8 @@ export async function createApp() {
   app.use(cors(corsOptions));
   
   // Body parsing
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(express.json({ limit: '1mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '1mb' }));
   
   // Cookie parser
   app.use(cookieParser());
@@ -105,7 +114,7 @@ export async function createApp() {
   
   // Session configuration
   const sessionConfig = {
-    name: process.env.SESSION_COOKIE_NAME || 'dr_session',
+    name: process.env.SESSION_COOKIE_NAME || '3sh_session',
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
@@ -148,7 +157,7 @@ export async function createApp() {
   
   // Routes with specific rate limiters
   app.use(`${apiPrefix}/auth`, authLimiter, authRoutes);
-  app.use(`${apiPrefix}/auth/oauth`, oauthRoutes);
+  app.use(`${apiPrefix}/auth/oauth`, authLimiter, oauthRoutes);
   app.use(`${apiPrefix}/domains`, domainCheckLimiter, domainRoutes);
   app.use(`${apiPrefix}/dns`, dnsRoutes);
   app.use(`${apiPrefix}/cart`, cartRoutes);

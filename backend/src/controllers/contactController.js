@@ -1,4 +1,5 @@
 import { Contact } from '../models/Contact.js';
+import { Domain } from '../models/Domain.js';
 import { z } from 'zod';
 
 const createContactSchema = z.object({
@@ -167,6 +168,25 @@ export async function updateContact(req, res, next) {
 export async function deleteContact(req, res, next) {
   try {
     const { id } = req.params;
+    
+    // Check if contact is referenced by any domain
+    const domainUsingContact = await Domain.findOne({
+      userId: req.user.id,
+      $or: [
+        { 'contacts.registrant': id },
+        { 'contacts.admin': id },
+        { 'contacts.tech': id },
+        { 'contacts.billing': id },
+      ],
+    });
+    
+    if (domainUsingContact) {
+      return res.status(409).json({
+        success: false,
+        error: { message: 'Contact is in use by a domain and cannot be deleted', code: 'CONTACT_IN_USE' },
+      });
+    }
+    
     const contact = await Contact.findOneAndDelete({ _id: id, userId: req.user.id });
     
     if (!contact) {

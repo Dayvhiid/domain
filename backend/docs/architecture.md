@@ -108,7 +108,7 @@ req.session.openProviderToken = token
 req.session.openProviderResellerId = resellerId
     │
     ▼
-Set-Cookie: dr_session=...
+Set-Cookie: 3sh_session=...
     │
     ▼
 Return: { user, openProvider: { token, resellerId } }

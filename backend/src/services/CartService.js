@@ -1,5 +1,6 @@
 import { Cart } from '../models/Cart.js';
 import { Domain } from '../models/Domain.js';
+import { Coupon } from '../models/Coupon.js';
 
 class CartService {
   /**
@@ -68,8 +69,25 @@ class CartService {
    * Apply coupon
    */
   async applyCoupon(userId, sessionId, couponData) {
+    const { code } = couponData;
+    if (!code) throw new Error('Coupon code is required');
+    
+    const coupon = await Coupon.findByCode(code);
+    if (!coupon) throw new Error('Invalid coupon code');
+    if (!coupon.isValid()) throw new Error('Coupon is expired or inactive');
+    
     const cart = await this.getCart(userId, sessionId);
-    await cart.applyCoupon(couponData);
+    const subtotal = cart.subtotal;
+    if (subtotal < coupon.minOrderAmount) {
+      throw new Error(`Minimum order amount is ${coupon.minOrderAmount} ${coupon.currency}`);
+    }
+    
+    await cart.applyCoupon({
+      code: coupon.code,
+      discountType: coupon.discountType,
+      discountValue: coupon.discountValue,
+      expiresAt: coupon.expiresAt,
+    });
     return cart;
   }
   

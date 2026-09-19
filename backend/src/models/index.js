@@ -9,6 +9,7 @@ export { NameserverGroup } from './Nameserver.js';
 export { Cart } from './Cart.js';
 export { Order } from './Order.js';
 export { Invoice } from './Invoice.js';
+export { Coupon } from './Coupon.js';
 
 /**
  * Initialize all models (ensures indexes are created)
